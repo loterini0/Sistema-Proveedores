@@ -1,0 +1,9 @@
+{
+  "apps/api/src/**/*.{ts}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "apps/mobile/src/**/*.{ts,tsx}": [
+    "prettier --write"
+  ]
+}
