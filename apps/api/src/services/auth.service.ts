@@ -1,31 +1,26 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { users } from '../db/schema';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
-const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET!;
-const REFRESH_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
+const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || 'dev_refresh_secret';
+
+const ACCESS_TOKEN_OPTIONS: SignOptions = { expiresIn: 900 }; // 15 min
+const REFRESH_TOKEN_OPTIONS: SignOptions = { expiresIn: 2592000 }; // 30 dias
 
 export const authService = {
-  // RF-AUTH-01: Registro
   async register(nombre: string, email: string, password: string) {
-    // Verificar si el email ya existe
     const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existing.length > 0) {
-      throw Object.assign(new Error('El email ya está registrado.'), { status: 409 });
+      throw Object.assign(new Error('El email ya esta registrado.'), { status: 409 });
     }
 
-    // Hash de contraseña
     const passwordHash = await bcrypt.hash(password, 12);
-
-    // Token de verificación de email
     const verifyToken = crypto.randomBytes(32).toString('hex');
 
-    // Crear usuario
     const [user] = await db
       .insert(users)
       .values({
@@ -40,7 +35,6 @@ export const authService = {
     return { user, verifyToken };
   },
 
-  // RF-AUTH-01: Login
   async login(email: string, password: string) {
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
@@ -54,7 +48,7 @@ export const authService = {
     }
 
     if (!user.emailVerified) {
-      throw Object.assign(new Error('Debes verificar tu email antes de iniciar sesión.'), {
+      throw Object.assign(new Error('Debes verificar tu email antes de iniciar sesion.'), {
         status: 403,
       });
     }
@@ -62,37 +56,31 @@ export const authService = {
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email, nombre: user.nombre },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN },
+      ACCESS_TOKEN_OPTIONS,
     );
 
-    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, {
-      expiresIn: REFRESH_EXPIRES_IN,
-    });
+    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, REFRESH_TOKEN_OPTIONS);
 
     return { accessToken, refreshToken, user };
   },
 
-  // RF-AUTH-06: Recuperación de contraseña
   async forgotPassword(email: string) {
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-
-    // Siempre responder igual por seguridad (no revelar si existe el email)
     if (!user) return null;
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutos
+    const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.update(users).set({ resetToken, resetTokenExpiresAt }).where(eq(users.id, user.id));
 
     return { resetToken, user };
   },
 
-  // RF-AUTH-06: Reset de contraseña
   async resetPassword(token: string, newPassword: string) {
     const [user] = await db.select().from(users).where(eq(users.resetToken, token)).limit(1);
 
     if (!user || !user.resetTokenExpiresAt) {
-      throw Object.assign(new Error('Token inválido o expirado.'), { status: 400 });
+      throw Object.assign(new Error('Token invalido o expirado.'), { status: 400 });
     }
 
     if (new Date() > user.resetTokenExpiresAt) {
@@ -100,19 +88,17 @@ export const authService = {
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-
     await db
       .update(users)
       .set({ passwordHash, resetToken: null, resetTokenExpiresAt: null })
       .where(eq(users.id, user.id));
   },
 
-  // Verificación de email
   async verifyEmail(token: string) {
     const [user] = await db.select().from(users).where(eq(users.verifyToken, token)).limit(1);
 
     if (!user) {
-      throw Object.assign(new Error('Token de verificación inválido.'), { status: 400 });
+      throw Object.assign(new Error('Token de verificacion invalido.'), { status: 400 });
     }
 
     await db
