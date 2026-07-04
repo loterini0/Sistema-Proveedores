@@ -1,10 +1,14 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, integer, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
 
-// ── Enums ─────────────────────────────────────────────────
-export const rfqStatusEnum = pgEnum('rfq_status', ['draft', 'active', 'closed', 'awarded', 'cancelled']);
+export const rfqStatusEnum = pgEnum('rfq_status', [
+  'draft',
+  'active',
+  'closed',
+  'awarded',
+  'cancelled',
+]);
 export const userRoleEnum = pgEnum('user_role', ['admin', 'editor', 'viewer']);
 
-// ── Users ─────────────────────────────────────────────────
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   nombre: varchar('nombre', { length: 100 }).notNull(),
@@ -18,10 +22,11 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// ── Empresas ──────────────────────────────────────────────
 export const empresas = pgTable('empresas', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('user_id').references(() => users.id).notNull(),
+  userId: uuid('user_id')
+    .references(() => users.id)
+    .notNull(),
   razonSocial: varchar('razon_social', { length: 255 }).notNull(),
   nit: varchar('nit', { length: 20 }).unique(),
   sector: varchar('sector', { length: 100 }),
@@ -37,10 +42,11 @@ export const empresas = pgTable('empresas', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// ── Productos ─────────────────────────────────────────────
 export const productos = pgTable('productos', {
   id: uuid('id').defaultRandom().primaryKey(),
-  empresaId: uuid('empresa_id').references(() => empresas.id).notNull(),
+  empresaId: uuid('empresa_id')
+    .references(() => empresas.id)
+    .notNull(),
   nombre: varchar('nombre', { length: 255 }).notNull(),
   descripcion: text('descripcion'),
   precio: varchar('precio', { length: 50 }),
@@ -49,10 +55,11 @@ export const productos = pgTable('productos', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// ── RFQs ──────────────────────────────────────────────────
 export const rfqs = pgTable('rfqs', {
   id: uuid('id').defaultRandom().primaryKey(),
-  compradorId: uuid('comprador_id').references(() => users.id).notNull(),
+  compradorId: uuid('comprador_id')
+    .references(() => users.id)
+    .notNull(),
   empresaCompradorId: uuid('empresa_comprador_id').references(() => empresas.id),
   titulo: varchar('titulo', { length: 255 }).notNull(),
   descripcion: text('descripcion').notNull(),
@@ -65,11 +72,14 @@ export const rfqs = pgTable('rfqs', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// ── Cotizaciones ──────────────────────────────────────────
 export const cotizaciones = pgTable('cotizaciones', {
   id: uuid('id').defaultRandom().primaryKey(),
-  rfqId: uuid('rfq_id').references(() => rfqs.id).notNull(),
-  proveedorId: uuid('proveedor_id').references(() => users.id).notNull(),
+  rfqId: uuid('rfq_id')
+    .references(() => rfqs.id)
+    .notNull(),
+  proveedorId: uuid('proveedor_id')
+    .references(() => users.id)
+    .notNull(),
   empresaProveedorId: uuid('empresa_proveedor_id').references(() => empresas.id),
   precioUnitario: varchar('precio_unitario', { length: 100 }),
   precioTotal: varchar('precio_total', { length: 100 }),
@@ -80,9 +90,12 @@ export const cotizaciones = pgTable('cotizaciones', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// ── RFQ Destinatarios (RFQ privada) ───────────────────────
 export const rfqDestinatarios = pgTable('rfq_destinatarios', {
   id: uuid('id').defaultRandom().primaryKey(),
-  rfqId: uuid('rfq_id').references(() => rfqs.id).notNull(),
-  empresaId: uuid('empresa_id').references(() => empresas.id).notNull(),
+  rfqId: uuid('rfq_id')
+    .references(() => rfqs.id)
+    .notNull(),
+  empresaId: uuid('empresa_id')
+    .references(() => empresas.id)
+    .notNull(),
 });
