@@ -9,3 +9,4 @@ build/
 Thumbs.db
 coverage/
 *.tsbuildinfo
+apps/api/.env.local.backup
