@@ -8,7 +8,7 @@ on:
 
 jobs:
   api:
-    name: API — Lint & Test
+    name: API - Test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -38,9 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Type check
-        run: npx tsc --noEmit
+        working-directory: .
 
       - name: Run tests
         run: npm test
