@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sistema-proveedores-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sistema_proveedores
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    container_name: sistema-proveedores-api
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sistema_proveedores
+      JWT_SECRET: dev_secret_change_in_prod
+      REFRESH_TOKEN_SECRET: dev_refresh_secret
+      PORT: 3000
+    volumes:
+      - ./apps/api/src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
