@@ -6,11 +6,9 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Sistema Proveedores</Text>
       <Text style={styles.subtitle}>Plataforma B2B Colombia</Text>
-
       <TouchableOpacity style={styles.btn} onPress={() => router.push('/auth/login')}>
-        <Text style={styles.btnText}>Iniciar sesión</Text>
+        <Text style={styles.btnText}>Iniciar sesion</Text>
       </TouchableOpacity>
-
       <TouchableOpacity style={[styles.btn, styles.btnOutline]} onPress={() => router.push('/auth/register')}>
         <Text style={[styles.btnText, styles.btnOutlineText]}>Registrarse</Text>
       </TouchableOpacity>

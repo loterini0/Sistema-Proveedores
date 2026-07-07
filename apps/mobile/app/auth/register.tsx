@@ -5,9 +5,9 @@ import { z } from 'zod';
 import { router } from 'expo-router';
 
 const schema = z.object({
-  nombre: z.string().min(2, 'Mínimo 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'Mínimo 8 caracteres'),
+  nombre: z.string().min(2, 'Minimo 2 caracteres'),
+  email: z.string().email('Email invalido'),
+  password: z.string().min(8, 'Minimo 8 caracteres'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -19,12 +19,11 @@ export default function RegisterScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      // TODO: llamar authService.register(data)
       console.log('Register:', data);
-      Alert.alert('¡Listo!', 'Revisa tu email para verificar tu cuenta.', [
+      Alert.alert('Listo', 'Revisa tu email para verificar tu cuenta.', [
         { text: 'OK', onPress: () => router.replace('/auth/login') }
       ]);
-    } catch (err) {
+    } catch {
       Alert.alert('Error', 'No se pudo crear la cuenta');
     }
   };
@@ -32,67 +31,32 @@ export default function RegisterScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Crear cuenta</Text>
-
-      <Controller
-        control={control}
-        name="nombre"
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.field}>
-            <Text style={styles.label}>Nombre completo</Text>
-            <TextInput
-              style={[styles.input, errors.nombre && styles.inputError]}
-              onChangeText={onChange}
-              value={value}
-              placeholder="Juan Pérez"
-            />
-            {errors.nombre && <Text style={styles.error}>{errors.nombre.message}</Text>}
-          </View>
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="email"
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, errors.email && styles.inputError]}
-              onChangeText={onChange}
-              value={value}
-              placeholder="correo@empresa.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
-          </View>
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="password"
-        render={({ field: { onChange, value } }) => (
-          <View style={styles.field}>
-            <Text style={styles.label}>Contraseña</Text>
-            <TextInput
-              style={[styles.input, errors.password && styles.inputError]}
-              onChangeText={onChange}
-              value={value}
-              placeholder="••••••••"
-              secureTextEntry
-            />
-            {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
-          </View>
-        )}
-      />
-
+      <Controller control={control} name="nombre" render={({ field: { onChange, value } }) => (
+        <View style={styles.field}>
+          <Text style={styles.label}>Nombre completo</Text>
+          <TextInput style={[styles.input, errors.nombre && styles.inputError]} onChangeText={onChange} value={value} placeholder="Juan Perez" />
+          {errors.nombre && <Text style={styles.error}>{errors.nombre.message}</Text>}
+        </View>
+      )} />
+      <Controller control={control} name="email" render={({ field: { onChange, value } }) => (
+        <View style={styles.field}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput style={[styles.input, errors.email && styles.inputError]} onChangeText={onChange} value={value} placeholder="correo@empresa.com" keyboardType="email-address" autoCapitalize="none" />
+          {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
+        </View>
+      )} />
+      <Controller control={control} name="password" render={({ field: { onChange, value } }) => (
+        <View style={styles.field}>
+          <Text style={styles.label}>Contrasena</Text>
+          <TextInput style={[styles.input, errors.password && styles.inputError]} onChangeText={onChange} value={value} placeholder="••••••••" secureTextEntry />
+          {errors.password && <Text style={styles.error}>{errors.password.message}</Text>}
+        </View>
+      )} />
       <TouchableOpacity style={styles.btn} onPress={handleSubmit(onSubmit)}>
         <Text style={styles.btnText}>Registrarse</Text>
       </TouchableOpacity>
-
       <TouchableOpacity onPress={() => router.push('/auth/login')}>
-        <Text style={styles.link}>¿Ya tienes cuenta? Inicia sesión</Text>
+        <Text style={styles.link}>Ya tienes cuenta? Inicia sesion</Text>
       </TouchableOpacity>
     </ScrollView>
   );

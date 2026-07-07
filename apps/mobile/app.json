@@ -1,29 +1,29 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Sistema Proveedores",
+    "slug": "sistema-proveedores",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
-    },
+    "scheme": "sistema-proveedores",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android", "web"],
     "web": {
-      "favicon": "./assets/favicon.png"
+      "bundler": "metro",
+      "output": "static"
     },
     "plugins": [
       "expo-router",
       "expo-secure-store"
-    ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "deploymentTarget": "15.1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#1D6F42"
+      }
+    }
   }
 }
