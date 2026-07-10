@@ -1,31 +1,37 @@
-import { mockRfqs, mockContribution, Rfq, Contribution } from "./mock.data";
-import { api } from "./api";
+import {
+  mockRfqs,
+  mockCotizaciones,
+  mockRfqDestinatarios,
+  Rfq,
+  RfqStatus,
+  Cotizacion,
+} from "./mock.data";
+import { rfqService as rfqApi } from "./api";
 
 const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
 
-export interface RfqSearchParams {
-  state?: Rfq["state"];
-  applicantCompanyId?: string;
+export interface RfqListParams {
+  status?: RfqStatus;
 }
 
 export const rfqService = {
-  search: async (params?: RfqSearchParams): Promise<Rfq[]> => {
+  list: async (params?: RfqListParams): Promise<Rfq[]> => {
     if (USE_MOCKS) {
-      let resul = mockRfqs;
+      let resultado = mockRfqs;
 
-      if (params?.state) {
-        resul = resul.filter((r) => r.state === params.state);
+      if (params?.status) {
+        resultado = resultado.filter((r) => r.status === params.status);
       }
-
-      if (params?.applicantCompanyId) {
-        resul = resul.filter(
-          (r) => r.applicantCompanyId === params.applicantCompanyId,
-        );
-      }
-      return resul;
+      return resultado;
     }
 
-    const { data } = await api.get("/rfqs/search", { params });
+    const { data } = await rfqApi.list(
+      params
+        ? {
+            estado: params.status,
+          }
+        : undefined,
+    );
     return data;
   },
 
@@ -34,16 +40,32 @@ export const rfqService = {
       return mockRfqs.find((r) => r.id === id);
     }
 
-    const { data } = await api.get(`/rfqs/${id}`);
+    const { data } = await rfqApi.get(id);
     return data;
   },
 
-  getContribution: async (rfqId: string): Promise<Contribution[]> => {
+  getCotizaciones: async (rfqId: string): Promise<Cotizacion[]> => {
     if (USE_MOCKS) {
-      return mockContribution.filter((c) => c.rfqId === rfqId);
+      return mockCotizaciones.filter((c) => c.rfqId === rfqId);
     }
 
-    const { data } = await api.get(`/rfqs/${rfqId}/contribution`);
+    const { data } = await rfqApi.getCotizaciones(rfqId);
     return data;
   },
+
+  // Solo aplica para RFQs privadas: qué empresas fueron invitadas a cotizar.
+  // No hay endpoint expuesto todavía en api.ts para esto — si lo agregan,
+  // solo hay que reemplazar el bloque `if (USE_MOCKS)` por la llamada real.
+  getDestinatarios: async (rfqId: string) => {
+    if (USE_MOCKS) {
+      return mockRfqDestinatarios.filter((d) => d.rfqId === rfqId);
+    }
+
+    throw new Error(
+      "getDestinatarios: falta implementar el endpoint real en api.ts",
+    );
+  },
+
+  // create y submitCotizacion mandan FormData (multipart) y siempre pegan
+  // contra la API real, sin importar EXPO_PUBLIC_USE_MOCKS.
 };

@@ -1,45 +1,57 @@
-import { mockCompany, Company } from "./mock.data";
-import { api } from "./api";
+import { mockEmpresas, mockProductos, Empresa, Producto } from "./mock.data";
+import { empresaService as empresaApi } from "./api";
 
-const USE_MOKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
+const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
 
-export interface ComponaySearchParams {
-  query?: string;
-  category?: string;
-  city?: string;
+export interface EmpresaSearchParams {
+  q?: string;
+  sector?: string;
+  departamento?: string;
+  page?: number;
 }
 
-export const companyService = {
-  search: async (params?: ComponaySearchParams): Promise<Company[]> => {
-    if (USE_MOKS) {
-      let resul = mockCompany;
+export const empresaService = {
+  search: async (params?: EmpresaSearchParams): Promise<Empresa[]> => {
+    if (USE_MOCKS) {
+      let resultado = mockEmpresas;
 
-      if (params?.query) {
-        const q = params.query.toLowerCase();
-        resul = resul.filter((e) => e.name.toLowerCase().includes(q));
+      if (params?.q) {
+        const q = params.q.toLowerCase();
+        resultado = resultado.filter((e) =>
+          e.razonSocial.toLowerCase().includes(q),
+        );
+      }
+      if (params?.sector) {
+        resultado = resultado.filter((e) => e.sector === params.sector);
+      }
+      if (params?.departamento) {
+        resultado = resultado.filter(
+          (e) => e.departamento === params.departamento,
+        );
       }
 
-      if (params?.category) {
-        resul = resul.filter((e) => e.category === params.category);
-      }
-
-      if (params?.city) {
-        resul = resul.filter((e) => e.city === params.city);
-      }
-
-      return resul;
+      return resultado;
     }
 
-    const { data } = await api.get(`company/search`, { params });
+    const { data } = await empresaApi.search(params ?? {});
     return data;
   },
 
-  get: async (id: string): Promise<Company | undefined> => {
-    if (USE_MOKS) {
-      return mockCompany.find((e) => e.id === id);
+  get: async (id: string): Promise<Empresa | undefined> => {
+    if (USE_MOCKS) {
+      return mockEmpresas.find((e) => e.id === id);
     }
 
-    const { data } = await api.get(`/company/${id}`);
+    const { data } = await empresaApi.get(id);
+    return data;
+  },
+
+  getProductos: async (id: string): Promise<Producto[]> => {
+    if (USE_MOCKS) {
+      return mockProductos.filter((p) => p.empresaId === id);
+    }
+
+    const { data } = await empresaApi.getProductos(id);
     return data;
   },
 };

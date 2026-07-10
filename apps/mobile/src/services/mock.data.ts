@@ -1,240 +1,235 @@
 //tipos base
 
-export interface Product {
+export type UserRole = "admin" | "editor" | "viewer";
+
+export interface Usuario {
   id: string;
-  name: string;
-  category: string;
-  unit: string;
-  referencePrice: number;
+  nombre: string;
+  email: string;
+  emailVerified: boolean;
+  role: UserRole;
 }
 
-export interface Company {
+export interface Empresa {
   id: string;
-  name: string;
-  ruc: string;
-  category: string;
-  city: string;
-  calification: number;
-  verify: boolean;
-  products: Product[];
+  userId: string;
+  razonSocial: string;
+  nit: string;
+  sector: string;
+  sectorNivel2: string;
+  ciudad: string;
+  departamento: string;
 }
 
-export type RfqState = "abierto" | "en_revision" | "cerrado";
-
-export interface RfqItem {
+export interface Producto {
   id: string;
-  productName: string;
-  amount: number;
-  unit: string;
+  empresaId: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  imagenUrl: string;
 }
+
+export type RfqStatus = "draft" | "active" | "closed" | "awarded" | "cacelled";
 
 export interface Rfq {
   id: string;
-  title: string;
-  description: string;
-  state: RfqState;
-  applicantCompanyId: string;
-  creationDate: string;
-  limitDate: string;
-  items: RfqItem[];
+  compradorId: string;
+  titulo: string;
+  descripcion: string;
+  privada: boolean;
+  status: RfqStatus;
+  fechaLimite: string;
 }
 
-export type contributionState = "pendiente" | "aceptada" | "rechazada";
-
-export interface Contribution {
+export interface Cotizacion {
   id: string;
   rfqId: string;
-  supplierCompanyId: string;
-  totalAmount: number;
-  badge: string;
-  state: contributionState;
-  dispatchDate: string;
-  notes: string;
+  proveedorId: string; // empresas.id de quien cotiza
+  precioTotal: number;
+  plazoEntrega: string;
+  ganadora: boolean;
+}
+
+export interface RfqDestinatario {
+  id: string;
+  rfqId: string;
+  empresaId: string;
 }
 
 // Mocks
 
-export const mockCompany: Company[] = [
+export const mockUsuarios: Usuario[] = [
   {
-    id: "comp-001",
-    name: "Ferreteria Andina S.A",
-    ruc: "900123456-1",
-    category: "Materiales de construccion",
-    city: "Manizales",
-    calification: 4.6,
-    verify: true,
-    products: [
-      {
-        id: "prod-001",
-        name: "Cemento gris 50KG",
-        category: "Contruccion",
-        unit: "bulto",
-        referencePrice: 32000,
-      },
-      {
-        id: "prod-002",
-        name: 'Varilla corrugada 3/8"',
-        category: "Contruccion",
-        unit: "unidad",
-        referencePrice: 18500,
-      },
-    ],
+    id: "usr-001",
+    nombre: "Carlos Restrepo",
+    email: "carlos@ferreteriaandina.co",
+    emailVerified: true,
+    role: "admin",
   },
   {
-    id: "comp-002",
-    name: "TecnoSuministros del Café",
-    ruc: "900987654-3",
-    category: "Tecnologia e insumos de oficina",
-    city: "Pereira",
-    calification: 4.2,
-    verify: true,
-    products: [
-      {
-        id: "prod-003",
-        name: 'laptop 14" 8GB RAM',
-        category: "Tecnologia",
-        unit: "unidad",
-        referencePrice: 2450000,
-      },
-      {
-        id: "prod-004",
-        name: "Resma papel carta",
-        category: "Oficina",
-        unit: "resma",
-        referencePrice: 15000,
-      },
-    ],
+    id: "usr-002",
+    nombre: "Laura Gomez",
+    email: "laura@tecnosuministros.co",
+    emailVerified: true,
+    role: "admin",
   },
   {
-    id: "comp-003",
-    name: "Distribuidora Agroinsumos del Eje",
-    ruc: "901234567-8",
-    category: "Agroindustria",
-    city: "Armenia",
-    calification: 3.9,
-    verify: false,
-    products: [
-      {
-        id: "prod-005",
-        name: "Fertilizante NPK 25KG",
-        category: "Agroindustria",
-        unit: "bulto",
-        referencePrice: 98000,
-      },
-      {
-        id: "prod-006",
-        name: "Guantes de nitrilo caja x100",
-        category: "Seguridad industrial",
-        unit: "caja",
-        referencePrice: 42000,
-      },
-    ],
+    id: "usr-003",
+    nombre: "Andres Osorio",
+    email: "andres@agroinsumoseje.co",
+    emailVerified: false,
+    role: "editor",
+  },
+];
+
+export const mockEmpresas: Empresa[] = [
+  {
+    id: "emp-001",
+    userId: "usr-001",
+    razonSocial: "Ferreteria Andina S.A",
+    nit: "900123456-1",
+    sector: "Construccion",
+    sectorNivel2: "Materiales y ferreteria",
+    ciudad: "Manizales",
+    departamento: "Caldas",
+  },
+  {
+    id: "emp-002",
+    userId: "usr-002",
+    razonSocial: "TecnoSuminstros del cafe",
+    nit: "900987654-3",
+    sector: "Contruccion",
+    sectorNivel2: "Equipos de computo y oficina",
+    ciudad: "Pereira",
+    departamento: "Risaralda",
+  },
+  {
+    id: "emp-003",
+    userId: "usr-003",
+    razonSocial: "Distribuidora Agroinsumos del Eje",
+    nit: "901234567-8",
+    sector: "Agroindustria",
+    sectorNivel2: "Insumos agricolas",
+    ciudad: "Armenia",
+    departamento: "Quindio",
+  },
+];
+
+export const mockProductos: Producto[] = [
+  {
+    id: "prod-001",
+    empresaId: "emp-001",
+    nombre: "Cemento gris 50 KG",
+    descripcion: "Cemento tipo UG para construccion general",
+    precio: 32000,
+    imagenUrl: "https://picsum.photos/seed/prod-001/400",
+  },
+  {
+    id: "prod-002",
+    empresaId: "emp-001",
+    nombre: 'Varilla corrugada 3/8"',
+    descripcion: "Varilla de refuerzo estructural, 6 metros",
+    precio: 18500,
+    imagenUrl: "https://picsum.photos/seed/prod-002/400",
+  },
+  {
+    id: "prod-003",
+    empresaId: "emp-002",
+    nombre: 'Laptop 14" 8GB RAM',
+    descripcion: "Equipo portatil para oficina, procesador Intel i5",
+    precio: 2450000,
+    imagenUrl: "https://picsum.photos/seed/prod-003/400",
+  },
+  {
+    id: "prod-004",
+    empresaId: "emp-002",
+    nombre: "Resma papel carta",
+    descripcion: "Resma de 500 hojas tamaño carta, 75g",
+    precio: 15000,
+    imagenUrl: "https://picsum.photos/seed/prod-004/400",
+  },
+  {
+    id: "prod-005",
+    empresaId: "emp-003",
+    nombre: "Fertilizante NPK 25 KG",
+    descripcion: "Fertilizante compuesto para cultivos de cafe y platano",
+    precio: 98000,
+    imagenUrl: "https://picsum.photos/seed/prod-005/400",
+  },
+  {
+    id: "prod-006",
+    empresaId: "emp-003",
+    nombre: "Guante de nitrilo caja x100",
+    descripcion: "Guantes desechables para compuestos de agroquimicos",
+    precio: 42000,
+    imagenUrl: "https://picsum.photos/seed/prod-006/400",
   },
 ];
 
 export const mockRfqs: Rfq[] = [
   {
     id: "rfq-001",
-    title: "Compra de materiales para obra civil",
-    description:
-      "Requerimos cemento y varillas para proyecto de viviendo den Manizales",
-    state: "abierto",
-    applicantCompanyId: "comp-002",
-    creationDate: "2026-06-20T10:00:00.000Z",
-    limitDate: "2026-07-20T23:59:59.000Z",
-    items: [
-      {
-        id: "item-001",
-        productName: "Cemento gris 50KG",
-        amount: 200,
-        unit: "bulto",
-      },
-      {
-        id: "item-002",
-        productName: 'Varilla corrugada 3/8"',
-        amount: 500,
-        unit: "unidad",
-      },
-    ],
+    compradorId: "emp-002",
+    titulo: "Compra de materiales para obra civil",
+    descripcion:
+      "Requerimos cemento y varillas para proyecto de vivienda en Manizales",
+    privada: false,
+    status: "active",
+    fechaLimite: "2026-07-20T23:59:59.000Z",
   },
   {
     id: "rfq-002",
-    title: "Equipos de computo para nueva sede",
-    description:
-      "Cotizacion de laptops y suministros de oficina para 15 puestos de trabajo",
-    state: "en_revision",
-    applicantCompanyId: "comp-001",
-    creationDate: "2026-06-15T09:30:00.000Z",
-    limitDate: "2026-07-05T23:59:59.000Z",
-    items: [
-      {
-        id: "item-003",
-        productName: 'Laptop 14" 8GB RAM',
-        amount: 15,
-        unit: "unidad",
-      },
-      {
-        id: "item-004",
-        productName: "Resma papel carta",
-        amount: 30,
-        unit: "resma",
-      },
-    ],
+    compradorId: "emp-001",
+    titulo: "Equipo de computo para nueva sede",
+    descripcion:
+      "Cotizacion de laptops y suminstros de oficina para 15 puestos de trabajo",
+    privada: true, //solo visible para las empresas listadas en rfq_destinatarios
+    status: "awarded",
+    fechaLimite: "2026-07-05T23:59:59.000Z",
   },
   {
     id: "rfq-003",
-    title: "Insumos agrícolas temporada 2026-B",
-    description: "Fertilizante y elementos de seguridad para personal de campo",
-    state: "cerrado",
-    applicantCompanyId: "emp-003",
-    creationDate: "2026-05-10T08:00:00.000Z",
-    limitDate: "2026-06-01T23:59:59.000Z",
-    items: [
-      {
-        id: "item-005",
-        productName: "Fertilziante NPK 25KG",
-        amount: 80,
-        unit: "bulto",
-      },
-      {
-        id: "item-006",
-        productName: "Guantes de nitrilo caja x100",
-        amount: 20,
-        unit: "caja",
-      },
-    ],
+    compradorId: "emp-003",
+    titulo: "Insumos agricolas temporada 2026-B",
+    descripcion: "Fertilizante y elementos de seguridad para personal de campo",
+    privada: false,
+    status: "closed",
+    fechaLimite: "2026-06-01T23:59:59.000Z",
   },
 ];
 
-export const mockContribution: Contribution[] = [
+// rfq-002 es privada --> solo tecno suminstros fue invitada a cotizar
+
+export const mockRfqDestinatarios: RfqDestinatario[] = [
+  { id: "rfqdest-001", rfqId: "rfq-002", empresaId: "emp-002" },
+];
+
+export const mockCotizaciones: Cotizacion[] = [
   {
-    id: "pri-001",
+    id: "cot-001",
     rfqId: "rfq-001",
-    supplierCompanyId: "emp-001",
-    totalAmount: 15650000,
-    badge: "COP",
-    state: "pendiente",
-    dispatchDate: "2026-06-25T14:00:00.000Z",
-    notes: "Entrega en obra incluida, tiempo estimado 5 dias habiles",
+    proveedorId: "emp-001",
+    precioTotal: 15650000,
+    plazoEntrega: "5 dias habiles",
+    ganadora: false, //rfq-001 sigue "active", aun no hay decision
   },
+
   {
-    id: "pri-002",
+    id: "cot-002",
     rfqId: "rfq-002",
-    supplierCompanyId: "emp-002",
-    totalAmount: 37200000,
-    badge: "COP",
-    state: "aceptada",
-    dispatchDate: "2026-06-18T11:20:00.000Z",
-    notes: "Incluye instalacion de software base y garantia de 12 meses",
+    proveedorId: "emp-002",
+    precioTotal: 37200000,
+    plazoEntrega: "10 dias habiles",
+    ganadora: true, //rfq-002 está "award" y esta fue la cotizacion ganadora
   },
+
   {
-    id: "pri-003",
+    id: "cot-003",
     rfqId: "rfq-003",
-    supplierCompanyId: "emp-003",
-    totalAmount: 8420000,
-    badge: "COP",
-    state: "rechazada",
-    dispatchDate: "2026-05-15T16:45:00.000Z",
-    notes: "Precio por encima del presupuesto asignado para la temporada",
+    proveedorId: "emp-003",
+    precioTotal: 8420000,
+    plazoEntrega: "7 dias habiles",
+    ganadora: false, //rfq-003 quedo "closed" sin adjudicar
   },
 ];
