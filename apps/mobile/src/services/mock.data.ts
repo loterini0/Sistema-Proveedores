@@ -41,7 +41,7 @@ export interface Rfq {
 
 export type contributionState = "pendiente" | "aceptada" | "rechazada";
 
-export interface Price {
+export interface Contribution {
   id: string;
   rfqId: string;
   supplierCompanyId: string;
@@ -206,7 +206,7 @@ export const mockRfqs: Rfq[] = [
   },
 ];
 
-export const mockContribution: Price[] = [
+export const mockContribution: Contribution[] = [
   {
     id: "pri-001",
     rfqId: "rfq-001",
