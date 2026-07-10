@@ -1,8 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
+import { empresaService } from '../services/empresa.service';
 
 export const createEmpresa = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(201).json({ message: 'Empresa registrada exitosamente.' });
+    const userId = (req as any).user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Token requerido.' });
+    }
+
+    const empresa = await empresaService.createEmpresa(userId, req.body);
+
+    res.status(201).json({
+      message: 'Empresa registrada exitosamente.',
+      empresa,
+    });
   } catch (err) {
     next(err);
   }
