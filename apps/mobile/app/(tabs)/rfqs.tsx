@@ -64,7 +64,7 @@ export default function RfqsScreen() {
   }, [buyerEmpresaIds, selectedStatus]);
 
   const handleCreateRfq = () => {
-    router.push("/rfq");
+    router.push("/rfq/nueva");
   };
 
   const handleOpenRfq = (id: string) => {
