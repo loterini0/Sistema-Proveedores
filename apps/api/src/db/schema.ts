@@ -22,8 +22,7 @@
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   });
 
-  // NUEVO: categorías normalizadas, jerárquicas (nivel 1 / nivel 2),
-  // reemplaza los campos de texto libre "sector" / "sectorNivel2"
+
   export const categorias = pgTable('categorias', {
     id: uuid('id').defaultRandom().primaryKey(),
     nombre: varchar('nombre', { length: 150 }).notNull(),
