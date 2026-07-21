@@ -1,27 +1,50 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
+import { Button } from '../src/components/button';
+import { Screen } from '../src/components/Screen';
+import { colors } from '../src/theme/colors';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sistema Proveedores</Text>
-      <Text style={styles.subtitle}>Plataforma B2B Colombia</Text>
-      <TouchableOpacity style={styles.btn} onPress={() => router.push('/auth/login')}>
-        <Text style={styles.btnText}>Iniciar sesion</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.btn, styles.btnOutline]} onPress={() => router.push('/auth/register')}>
-        <Text style={[styles.btnText, styles.btnOutlineText]}>Registrarse</Text>
-      </TouchableOpacity>
-    </View>
+    <Screen scroll={false}>
+      <View style={styles.container}>
+        <View style={styles.hero}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoText}>B2B</Text>
+          </View>
+          <Text style={styles.title}>Sistema Proveedores</Text>
+          <Text style={styles.subtitle}>Conectamos compradores y proveedores en Colombia</Text>
+        </View>
+        <View style={styles.actions}>
+          <Button label="Iniciar sesion" onPress={() => router.push('/auth/login')} />
+          <View style={styles.gap} />
+          <Button label="Registrarse" variant="outline" onPress={() => router.push('/auth/register')} />
+          <Text style={styles.proveedorText}>
+            ¿Eres proveedor?{' '}
+            <Text style={styles.proveedorLink} onPress={() => router.push('/auth/register')}>
+              Registra tu empresa
+            </Text>
+          </Text>
+        </View>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, backgroundColor: '#fff' },
-  title: { fontSize: 28, fontWeight: '700', color: '#1D6F42', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#6B6860', marginBottom: 48 },
-  btn: { width: '100%', backgroundColor: '#1D6F42', padding: 16, borderRadius: 10, alignItems: 'center', marginBottom: 12 },
-  btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-  btnOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#1D6F42' },
-  btnOutlineText: { color: '#1D6F42' },
+  container: { flex: 1, justifyContent: 'space-between', padding: 24 },
+  hero: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  logoBox: {
+    width: 80, height: 80, borderRadius: 20,
+    backgroundColor: colors.primary,
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 24,
+  },
+  logoText: { color: colors.white, fontSize: 24, fontWeight: '700' },
+  title: { fontSize: 28, fontWeight: '700', color: colors.text, textAlign: 'center', marginBottom: 12 },
+  subtitle: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
+  actions: { paddingBottom: 32 },
+  gap: { height: 12 },
+  proveedorText: { textAlign: 'center', marginTop: 20, fontSize: 14, color: colors.textSecondary },
+  proveedorLink: { color: colors.primary, fontWeight: '600' },
 });
