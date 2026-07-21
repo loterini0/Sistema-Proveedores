@@ -3,8 +3,7 @@ import { z } from 'zod';
 export const createEmpresaSchema = z.object({
   razonSocial: z.string().min(2).max(255),
   nit: z.string().min(1).max(20).optional(),
-  sector: z.string().min(1).max(100).optional(),
-  sectorNivel2: z.string().min(1).max(100).optional(),
+  categoriaId: z.string().uuid('categoriaId debe ser un uuid válido'),
   descripcion: z.string().max(2000).optional(),
   ciudad: z.string().min(1).max(100).optional(),
   departamento: z.string().min(1).max(100).optional(),

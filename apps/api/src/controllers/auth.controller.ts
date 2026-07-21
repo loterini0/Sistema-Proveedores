@@ -28,7 +28,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     res.json({
       accessToken,
       refreshToken,
-      user: { id: user.id, nombre: user.nombre, email: user.email },
+      user: { id: user.id, nombre: user.nombre, email: user.email, empresaId: user.empresaId },
     });
   } catch (err) {
     next(err);
