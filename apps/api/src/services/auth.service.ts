@@ -70,7 +70,13 @@ export const authService = {
     const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, REFRESH_TOKEN_OPTIONS);
 
     
-    const { passwordHash, verifyToken, resetToken, resetTokenExpiresAt, ...userSafe } = user;
+   const {
+  passwordHash: _passwordHash,
+  verifyToken: _verifyToken,
+  resetToken: _resetToken,
+  resetTokenExpiresAt: _resetTokenExpiresAt,
+  ...userSafe
+} = user;
 
     return { accessToken, refreshToken, user: { ...userSafe, empresaId } };
   },
