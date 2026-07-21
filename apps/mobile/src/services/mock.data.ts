@@ -8,6 +8,7 @@ export interface Usuario {
   email: string;
   emailVerified: boolean;
   role: UserRole;
+  empresaId: string | null; // NUEVO
 }
 
 export interface Empresa {
@@ -60,27 +61,9 @@ export interface RfqDestinatario {
 // Mocks
 
 export const mockUsuarios: Usuario[] = [
-  {
-    id: "usr-001",
-    nombre: "Carlos Restrepo",
-    email: "carlos@ferreteriaandina.co",
-    emailVerified: true,
-    role: "admin",
-  },
-  {
-    id: "usr-002",
-    nombre: "Laura Gomez",
-    email: "laura@tecnosuministros.co",
-    emailVerified: true,
-    role: "admin",
-  },
-  {
-    id: "usr-003",
-    nombre: "Andres Osorio",
-    email: "andres@agroinsumoseje.co",
-    emailVerified: false,
-    role: "editor",
-  },
+  { id: "usr-001", nombre: "Carlos Restrepo", email: "carlos@ferreteriaandina.co", emailVerified: true, role: "admin", empresaId: "emp-001" },
+  { id: "usr-002", nombre: "Laura Gomez", email: "laura@tecnosuministros.co", emailVerified: true, role: "admin", empresaId: "emp-002" },
+  { id: "usr-003", nombre: "Andres Osorio", email: "andres@agroinsumoseje.co", emailVerified: false, role: "editor", empresaId: "emp-003" },
 ];
 
 export const mockEmpresas: Empresa[] = [

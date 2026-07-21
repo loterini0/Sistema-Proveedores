@@ -2,14 +2,14 @@ import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
-import { users } from '../db/schema';
+import { users, empresas } from '../db/schema';
 import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || 'dev_refresh_secret';
 
 const ACCESS_TOKEN_OPTIONS: SignOptions = { expiresIn: 900 }; // 15 min
-const REFRESH_TOKEN_OPTIONS: SignOptions = { expiresIn: 2592000 }; // 30 dias
+const REFRESH_TOKEN_OPTIONS: SignOptions = { expiresIn: 2592000 }; // 30 dias 
 
 export const authService = {
   async register(nombre: string, email: string, password: string) {
@@ -53,15 +53,26 @@ export const authService = {
       });
     }
 
+    const [empresa] = await db
+      .select({ id: empresas.id })
+      .from(empresas)
+      .where(eq(empresas.userId, user.id))
+      .limit(1);
+
+    const empresaId = empresa?.id ?? null;
+
     const accessToken = jwt.sign(
-      { userId: user.id, email: user.email, nombre: user.nombre },
+      { userId: user.id, email: user.email, nombre: user.nombre, empresaId }, // <- agregado al payload
       JWT_SECRET,
       ACCESS_TOKEN_OPTIONS,
     );
 
     const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, REFRESH_TOKEN_OPTIONS);
 
-    return { accessToken, refreshToken, user };
+    
+    const { passwordHash, verifyToken, resetToken, resetTokenExpiresAt, ...userSafe } = user;
+
+    return { accessToken, refreshToken, user: { ...userSafe, empresaId } };
   },
 
   async forgotPassword(email: string) {

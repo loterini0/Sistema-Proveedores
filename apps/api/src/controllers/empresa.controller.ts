@@ -8,6 +8,11 @@ export const createEmpresa = async (req: Request, res: Response, next: NextFunct
       return res.status(401).json({ error: 'Token requerido.' });
     }
 
+    const existing = await empresaService.getEmpresaByUserId(userId);
+    if (existing) {
+      return res.status(409).json({ error: 'Ya tienes una empresa registrada.' });
+    }
+
     const empresa = await empresaService.createEmpresa(userId, req.body);
 
     res.status(201).json({

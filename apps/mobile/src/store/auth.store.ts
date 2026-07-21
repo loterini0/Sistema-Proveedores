@@ -5,6 +5,7 @@ interface User {
   id: string;
   email: string;
   nombre: string;
+  empresaId: string | null; // NUEVO
 }
 
 interface AuthState {
@@ -16,9 +17,10 @@ interface AuthState {
     refreshToken: string,
   ) => Promise<void>;
   logout: () => Promise<void>;
+  esProveedor: () => boolean; // NUEVO
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   setUser: async (user, accessToken, refreshToken) => {
@@ -31,4 +33,5 @@ export const useAuthStore = create<AuthState>((set) => ({
     await SecureStore.deleteItemAsync("refreshToken");
     set({ user: null, isAuthenticated: false });
   },
+  esProveedor: () => !!get().user?.empresaId, // NUEVO
 }));
