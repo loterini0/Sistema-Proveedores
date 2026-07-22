@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +8,8 @@ import { Button } from '../../src/components/button';
 import { Input } from '../../src/components/Input';
 import { Screen } from '../../src/components/Screen';
 import { colors } from '../../src/theme/colors';
+import { authService } from '../../src/services/api';
+import { useAuthStore } from '../../src/store/auth.store';
 
 const schema = z.object({
   email: z.string().email('Email invalido'),
@@ -16,16 +19,26 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginScreen() {
+  const setUser = useAuthStore((state) => state.setUser);
+
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (values: FormData) => {
     try {
-      console.log('Login:', data);
-      router.replace('/(tabs)/rfqs');
-    } catch {
-      Alert.alert('Error', 'Credenciales incorrectas');
+      const {data} = await authService.login(values);
+
+      await setUser(data.user, data.accessToken, data.refreshToken);
+      router.replace("/home")
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+      ? error.response?.data?.error ??
+        error.response?.data?.message ??
+        "No fue posible iniciar sesión"
+      : "No fue posible iniciar sesion"
+
+      Alert.alert("Error", message)
     }
   };
 
@@ -60,20 +73,19 @@ export default function LoginScreen() {
           />
         )} />
 
-        <Text style={styles.forgot} onPress={() => router.push('/auth/forgot-password')}>
-          Olvidaste tu contrasena?
+        <Text style={styles.link} onPress={() => router.push('/auth/forgot-password')}>
+          ¿Olvidaste tu contrasena?
         </Text>
 
         <Button
           label="Iniciar sesion"
           onPress={handleSubmit(onSubmit)}
           loading={isSubmitting}
-          style={styles.btn}
         />
 
-        <Text style={styles.register}>
-          No tienes cuenta?{' '}
-          <Text style={styles.registerLink} onPress={() => router.push('/auth/register')}>
+        <Text style={styles.footer}>
+          No tienes cuenta?{" "}
+          <Text style={styles.link} onPress={() => router.push('/auth/register')}>
             Registrate
           </Text>
         </Text>
@@ -87,8 +99,11 @@ const styles = StyleSheet.create({
   header: { marginTop: 24, marginBottom: 32 },
   title: { fontSize: 28, fontWeight: '700', color: colors.text },
   subtitle: { fontSize: 16, color: colors.textSecondary, marginTop: 6 },
-  forgot: { color: colors.primary, fontSize: 14, textAlign: 'right', marginBottom: 24 },
-  btn: { marginTop: 8 },
-  register: { textAlign: 'center', marginTop: 24, fontSize: 14, color: colors.textSecondary },
-  registerLink: { color: colors.primary, fontWeight: '600' },
+  link: { color: colors.primary, fontWeight: "600"},
+  footer: {
+    textAlign: "center",
+    marginTop: 24,
+    fontSize: 14,
+    color: colors.textSecondary
+  }
 });

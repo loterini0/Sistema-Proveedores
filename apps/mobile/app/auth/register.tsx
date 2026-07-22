@@ -7,6 +7,8 @@ import { Button } from '../../src/components/button';
 import { Input } from '../../src/components/Input';
 import { Screen } from '../../src/components/Screen';
 import { colors } from '../../src/theme/colors';
+import { authService } from '../../src/services/api';
+import axios from 'axios';
 
 const schema = z.object({
   nombre: z.string().min(2, 'Minimo 2 caracteres'),
@@ -27,12 +29,24 @@ export default function RegisterScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      console.log('Register:', data);
-      Alert.alert('Listo', 'Revisa tu email para verificar tu cuenta.', [
-        { text: 'OK', onPress: () => router.replace('/auth/login') }
-      ]);
-    } catch {
-      Alert.alert('Error', 'No se pudo crear la cuenta');
+      await authService.register({
+        nombre: data.nombre,
+        email: data.email,
+        password: data.password,
+      });
+
+      Alert.alert(
+        "Cuenta creada",
+        "Revisa tu email para verificar la cuenta antes de iniciar sesion",
+        [{text: "OK", onPress: () => router.replace("/auth/login")}],
+      )
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.error ??
+          error.response?.data?.message ??
+          "No se pudo crear la cuenta"
+        : "No se pudo crear la cuenta"
+      Alert.alert("Error", message);
     }
   };
 
