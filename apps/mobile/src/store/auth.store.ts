@@ -13,6 +13,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
+  restoreSession: () => Promise<void>
   setUser: (
     user: User,
     accessToken: string,
@@ -26,6 +27,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isHydrated: false,
+
   restoreSession: async() => {
     try{
       const accessToken = await SecureStore.getItemAsync("accessToken")
