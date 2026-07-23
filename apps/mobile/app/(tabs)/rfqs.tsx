@@ -28,7 +28,7 @@ const statusCopy: Record<
   draft: { label: "Borrador", badge: "default" },
   closed: { label: "Cerrada", badge: "error" },
   awarded: { label: "Adjudicada", badge: "warning" },
-  cacelled: { label: "Cancelada", badge: "error" },
+  cancelled: { label: "Cancelada", badge: "error" },
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-CO", {
