@@ -10,8 +10,25 @@ export const createRFQ = async (req: Request, res: Response, next: NextFunction)
 
 export const listRFQs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json({ rfqs: [], total: 0 });
-  } catch (err) { next(err); }
+    const compradorId = (req as any).user?.userId;
+    const { estado, page = 1, limit = 20 } = req.query;
+
+    const result = await rfqService.listRFQsByComprador(
+      compradorId,
+      estado as any,
+      Number(page),
+      Number(limit)
+    );
+
+    res.json({
+      rfqs: result.rfqs,
+      total: result.total,
+      page: Number(page),
+      limit: Number(limit),
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getRFQ = async (req: Request, res: Response, next: NextFunction) => {
