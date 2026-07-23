@@ -22,7 +22,13 @@ export const createEmpresa = async (req: Request, res: Response, next: NextFunct
 export const getEmpresa = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    res.json({ id, nombre: 'Empresa Ejemplo SAS' });
+    const empresa = await empresaService.getEmpresaById(id);
+
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa no encontrada.' });
+    }
+
+    res.json({ data: empresa });
   } catch (err) {
     next(err);
   }
