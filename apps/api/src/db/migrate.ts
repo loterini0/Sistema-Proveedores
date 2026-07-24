@@ -7,6 +7,7 @@ import * as path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const DATABASE_URL = process.env.DATABASE_URL;
+const isProduction = process.env.NODE_ENV === 'production';
 
 if (!DATABASE_URL) {
   console.error('DATABASE_URL is not set');
@@ -17,7 +18,7 @@ async function main() {
   console.log('Connecting to:', DATABASE_URL!.replace(/:([^@]+)@/, ':****@'));
   const pool = new Pool({
     connectionString: DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: isProduction ? { rejectUnauthorized: false } : false,
   });
   const client = await pool.connect();
   console.log('Connected!');

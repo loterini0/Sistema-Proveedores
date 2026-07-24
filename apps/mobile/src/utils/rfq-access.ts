@@ -5,7 +5,7 @@ export function puedeCotizar(
   empresaId: string | null,
   destinatarios: RfqDestinatario[]
 ): boolean {
-  if (!empresaId) return false; // comprador puro, sin empresa
-  if (!rfq.privada) return true; // publica, cualquier proveedor puede cotizar
+  if (!empresaId) return false; 
+  if (!rfq.privada) return true; 
   return destinatarios.some((d) => d.rfqId === rfq.id && d.empresaId === empresaId);
 }
