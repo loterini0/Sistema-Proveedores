@@ -20,4 +20,9 @@ export const empresaService = {
     const [empresa] = await db.select().from(empresas).where(eq(empresas.userId, userId)).limit(1);
     return empresa ?? null;
   },
+
+  async getEmpresaById(id: string) {
+    const [empresa] = await db.select().from(empresas).where(eq(empresas.id, id)).limit(1);
+    return empresa ?? null;
+  },
 };
