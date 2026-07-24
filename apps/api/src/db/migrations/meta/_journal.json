@@ -8,6 +8,13 @@
       "when": 1783162566079,
       "tag": "0000_lethal_marvel_zombies",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784669329217,
+      "tag": "0001_nifty_kronos",
+      "breakpoints": true
     }
   ]
 }

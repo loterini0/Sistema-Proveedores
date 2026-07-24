@@ -1,32 +1,37 @@
-import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import { create } from "zustand";
+import * as SecureStore from "expo-secure-store";
 
 interface User {
   id: string;
   email: string;
   nombre: string;
+  empresaId: string | null; // NUEVO
 }
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  setUser: (user: User, accessToken: string, refreshToken: string) => Promise<void>;
+  setUser: (
+    user: User,
+    accessToken: string,
+    refreshToken: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
+  esProveedor: () => boolean; // NUEVO
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
-
   setUser: async (user, accessToken, refreshToken) => {
-    await SecureStore.setItemAsync('accessToken', accessToken);
-    await SecureStore.setItemAsync('refreshToken', refreshToken);
+    await SecureStore.setItemAsync("accessToken", accessToken);
+    await SecureStore.setItemAsync("refreshToken", refreshToken);
     set({ user, isAuthenticated: true });
   },
-
   logout: async () => {
-    await SecureStore.deleteItemAsync('accessToken');
-    await SecureStore.deleteItemAsync('refreshToken');
+    await SecureStore.deleteItemAsync("accessToken");
+    await SecureStore.deleteItemAsync("refreshToken");
     set({ user: null, isAuthenticated: false });
   },
+  esProveedor: () => !!get().user?.empresaId, // NUEVO
 }));

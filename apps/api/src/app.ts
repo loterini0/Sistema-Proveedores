@@ -7,6 +7,8 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes';
 import empresaRoutes from './routes/empresa.routes';
 import rfqRoutes from './routes/rfq.routes';
+import categoriaRoutes from './routes/categoria.routes';
+
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 
@@ -37,6 +39,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/empresas', empresaRoutes);
 app.use('/api/v1/rfq', rfqRoutes);
+app.use('/api/v1/categorias', categoriaRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

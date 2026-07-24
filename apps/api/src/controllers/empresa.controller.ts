@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { empresaService } from '../services/empresa.service';
+import { productoService } from '../services/producto.service';
 
 export const createEmpresa = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Token requerido.' });
+    }
+
+    const existing = await empresaService.getEmpresaByUserId(userId);
+    if (existing) {
+      return res.status(409).json({ error: 'Ya tienes una empresa registrada.' });
     }
 
     const empresa = await empresaService.createEmpresa(userId, req.body);
@@ -54,7 +60,8 @@ export const searchEmpresas = async (req: Request, res: Response, next: NextFunc
 export const getProductos = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    res.json({ productos: [], empresaId: id });
+    const productos = await productoService.getProductosByEmpresa(id);
+    res.json({ productos });
   } catch (err) {
     next(err);
   }
@@ -62,7 +69,19 @@ export const getProductos = async (req: Request, res: Response, next: NextFuncti
 
 export const createProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(201).json({ message: 'Producto publicado.' });
+    const { id } = req.params;
+    const empresaId = (req as any).user?.empresaId;
+
+    if (!empresaId || empresaId !== id) {
+      return res.status(403).json({ error: 'No tienes permiso para agregar productos a esta empresa.' });
+    }
+
+    const producto = await productoService.createProducto(id, req.body);
+
+    res.status(201).json({
+      message: 'Producto publicado.',
+      producto,
+    });
   } catch (err) {
     next(err);
   }
