@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from '../app';
 import { db } from '../db';
 import { users, empresas } from '../db/schema';
+import { eq } from 'drizzle-orm';
 
 describe('Empresa Endpoints', () => {
   let empresaId: string;
@@ -25,8 +26,6 @@ describe('Empresa Endpoints', () => {
         userId,
         razonSocial: 'Tech Solutions SAS',
         nit: '123456789',
-        sector: 'Technology',
-        sectorNivel2: 'Software',
         descripcion: 'Leading software development company',
         ciudad: 'Bogota',
         departamento: 'Cundinamarca',
@@ -55,7 +54,7 @@ describe('Empresa Endpoints', () => {
   });
 
   afterAll(async () => {
-    await db.delete(empresas).where({ id: empresaId });
-    await db.delete(users).where({ id: userId });
+    await db.delete(empresas).where(eq(empresas.id, empresaId));
+    await db.delete(users).where(eq(users.id, userId));
   });
 });
