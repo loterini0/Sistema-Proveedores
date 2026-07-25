@@ -50,8 +50,20 @@ export const updateEmpresa = async (req: Request, res: Response, next: NextFunct
 
 export const searchEmpresas = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
-    res.json({ empresas: [], total: 0, page: Number(page), limit: Number(limit) });
+    const { query, page = 1, limit = 10 } = req.query;
+
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: 'Query parameter requerido.' });
+    }
+
+    const result = await empresaService.searchEmpresas(query, Number(page), Number(limit));
+
+    res.json({
+      data: result.empresas,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    });
   } catch (err) {
     next(err);
   }
@@ -73,7 +85,9 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
     const empresaId = (req as any).user?.empresaId;
 
     if (!empresaId || empresaId !== id) {
-      return res.status(403).json({ error: 'No tienes permiso para agregar productos a esta empresa.' });
+      return res
+        .status(403)
+        .json({ error: 'No tienes permiso para agregar productos a esta empresa.' });
     }
 
     const producto = await productoService.createProducto(id, req.body);
