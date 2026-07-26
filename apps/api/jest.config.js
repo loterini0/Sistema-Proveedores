@@ -6,5 +6,6 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
+  setupFiles: ['dotenv/config'],
   collectCoverageFrom: ['src/**/*.ts', '!src/db/migrations/**'],
 };

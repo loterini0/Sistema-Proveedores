@@ -28,7 +28,7 @@ export const createEmpresa = async (req: Request, res: Response, next: NextFunct
 export const getEmpresa = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const empresa = await empresaService.getEmpresaById(id);
+    const empresa = await empresaService.getEmpresaWithProfile(id);
 
     if (!empresa) {
       return res.status(404).json({ error: 'Empresa no encontrada.' });
@@ -50,8 +50,22 @@ export const updateEmpresa = async (req: Request, res: Response, next: NextFunct
 
 export const searchEmpresas = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { page = 1, limit = 20 } = req.query;
-    res.json({ empresas: [], total: 0, page: Number(page), limit: Number(limit) });
+    const { q, departamento, categoriaId, page = 1, limit = 10 } = req.query as Record<string, any>;
+
+    const result = await empresaService.searchEmpresas({
+      q,
+      departamento,
+      categoriaId,
+      page: Number(page),
+      limit: Number(limit),
+    });
+
+    res.json({
+      data: result.empresas,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    });
   } catch (err) {
     next(err);
   }
@@ -73,7 +87,9 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
     const empresaId = (req as any).user?.empresaId;
 
     if (!empresaId || empresaId !== id) {
-      return res.status(403).json({ error: 'No tienes permiso para agregar productos a esta empresa.' });
+      return res
+        .status(403)
+        .json({ error: 'No tienes permiso para agregar productos a esta empresa.' });
     }
 
     const producto = await productoService.createProducto(id, req.body);
