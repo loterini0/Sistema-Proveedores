@@ -52,15 +52,30 @@ describe('Empresa Endpoints', () => {
         activo: true,
       } as any)
       .returning();
+
+    await db
+      .insert(productos)
+      .values({
+        empresaId,
+        nombre: 'Producto inactivo',
+        activo: false,
+      } as any)
+      .returning();
   });
 
   describe('GET /empresas/:id', () => {
-    it('should return empresa by ID', async () => {
+    it('should return empresa by ID with categoria and active products', async () => {
       const res = await request(app).get(`/api/v1/empresas/${empresaId}`);
       expect(res.status).toBe(200);
       expect(res.body.data).toBeDefined();
       expect(res.body.data.id).toBe(empresaId);
       expect(res.body.data.razonSocial).toBe('Tech Solutions SAS');
+      expect(res.body.data.categoria).toBeDefined();
+      expect(res.body.data.categoria.id).toBe(categoriaId);
+      expect(res.body.data.categoria.nombre).toBe('Tecnología');
+      expect(res.body.data.productos).toBeInstanceOf(Array);
+      expect(res.body.data.productos).toHaveLength(1);
+      expect(res.body.data.productos[0].nombre).toBe('Software de gestión');
     });
 
     it('should return 404 for non-existent empresa', async () => {

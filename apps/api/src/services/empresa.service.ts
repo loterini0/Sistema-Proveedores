@@ -21,9 +21,29 @@ export const empresaService = {
     return empresa ?? null;
   },
 
-  async getEmpresaById(id: string) {
-    const [empresa] = await db.select().from(empresas).where(eq(empresas.id, id)).limit(1);
-    return empresa ?? null;
+  async getEmpresaWithProfile(id: string) {
+    const [result] = await db
+      .select({
+        empresa: empresas,
+        categoria: categorias,
+      })
+      .from(empresas)
+      .leftJoin(categorias, eq(empresas.categoriaId, categorias.id))
+      .where(eq(empresas.id, id))
+      .limit(1);
+
+    if (!result) return null;
+
+    const activeProducts = await db
+      .select()
+      .from(productos)
+      .where(and(eq(productos.empresaId, id), eq(productos.activo, true)));
+
+    return {
+      ...result.empresa,
+      categoria: result.categoria ?? undefined,
+      productos: activeProducts,
+    };
   },
 
   async searchEmpresas(options: {
