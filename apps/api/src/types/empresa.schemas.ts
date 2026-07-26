@@ -13,7 +13,9 @@ export const createEmpresaSchema = z.object({
 });
 
 export const searchEmpresasSchema = z.object({
-  query: z.string().min(1).max(255),
+  q: z.string().min(1).max(255).optional(),
+  departamento: z.string().min(1).max(100).optional(),
+  categoriaId: z.string().uuid('categoriaId debe ser un uuid válido').optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });
