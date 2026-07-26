@@ -4,11 +4,12 @@ import request from 'supertest';
 import { eq } from 'drizzle-orm';
 import app from '../app';
 import { db } from '../db';
-import { users, empresas } from '../db/schema';
+import { users, empresas, categorias, productos } from '../db/schema';
 
 describe('Empresa Endpoints', () => {
   let empresaId: string;
   let userId: string;
+  let categoriaId: string;
 
   beforeAll(async () => {
     const [user] = await db
@@ -22,14 +23,35 @@ describe('Empresa Endpoints', () => {
       .returning();
     userId = user.id;
 
+    const [categoria] = await db
+      .insert(categorias)
+      .values({
+        nombre: 'Tecnología',
+        slug: `tecnologia-${Date.now()}`,
+        activo: true,
+      } as any)
+      .returning();
+    categoriaId = categoria.id;
+
     const [empresa] = await db
       .insert(empresas)
       .values({
         userId,
         razonSocial: 'Tech Solutions SAS',
+        departamento: 'Valle del Cauca',
+        categoriaId,
       } as any)
       .returning();
     empresaId = empresa.id;
+
+    await db
+      .insert(productos)
+      .values({
+        empresaId,
+        nombre: 'Software de gestión',
+        activo: true,
+      } as any)
+      .returning();
   });
 
   describe('GET /empresas/:id', () => {
@@ -49,25 +71,61 @@ describe('Empresa Endpoints', () => {
   });
 
   describe('GET /empresas/search', () => {
-    it('should search empresas by razonSocial', async () => {
+    it('should search by q in razonSocial', async () => {
       const res = await request(app)
         .get('/api/v1/empresas/search')
-        .query({ query: 'Tech', page: 1, limit: 10 });
+        .query({ q: 'Tech', page: 1, limit: 10 });
       expect(res.status).toBe(200);
-      expect(res.body.data).toBeDefined();
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+      expect(res.body.data[0].razonSocial).toBe('Tech Solutions SAS');
+      expect(res.body.data[0].categoria).toBeDefined();
+      expect(res.body.data[0].categoria.nombre).toBe('Tecnología');
       expect(res.body.total).toBeGreaterThanOrEqual(0);
       expect(res.body.page).toBe(1);
       expect(res.body.limit).toBe(10);
     });
 
-    it('should return 400 if query is missing', async () => {
-      const res = await request(app).get('/api/v1/empresas/search').query({ page: 1 });
-      expect(res.status).toBe(400);
+    it('should search by q in product name', async () => {
+      const res = await request(app).get('/api/v1/empresas/search').query({ q: 'Software' });
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should filter by departamento', async () => {
+      const res = await request(app)
+        .get('/api/v1/empresas/search')
+        .query({ departamento: 'Valle del Cauca' });
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should filter by categoriaId', async () => {
+      const res = await request(app).get('/api/v1/empresas/search').query({ categoriaId });
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should combine q + departamento + categoriaId', async () => {
+      const res = await request(app)
+        .get('/api/v1/empresas/search')
+        .query({ q: 'Tech', departamento: 'Valle del Cauca', categoriaId });
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return empty when q does not match', async () => {
+      const res = await request(app)
+        .get('/api/v1/empresas/search')
+        .query({ q: 'xyz-non-existent' });
+      expect(res.status).toBe(200);
+      expect(res.body.data.length).toBe(0);
     });
   });
 
   afterAll(async () => {
+    await db.delete(productos).where(eq(productos.empresaId, empresaId));
     await db.delete(empresas).where(eq(empresas.id, empresaId));
+    await db.delete(categorias).where(eq(categorias.id, categoriaId));
     await db.delete(users).where(eq(users.id, userId));
   });
 });
