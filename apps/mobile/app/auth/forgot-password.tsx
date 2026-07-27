@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import {Controller, useForm} from "react-hook-form"
 import {Alert, StyleSheet, Text, View} from "react-native";
 import {z} from "zod"
-import { Button } from "../../src/components/button";
+import { Button } from "../../src/components/Button";
 import { Input } from "../../src/components/Input";
 import { Screen } from "../../src/components/Screen";
 import { authService } from "../../src/services/api";

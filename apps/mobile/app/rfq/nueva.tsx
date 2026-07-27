@@ -15,7 +15,7 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 
-import { Button } from "../../src/components/button";
+import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
 import { colors } from "../../src/theme/colors";

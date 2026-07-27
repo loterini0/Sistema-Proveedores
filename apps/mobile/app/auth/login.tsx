@@ -4,7 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { router } from 'expo-router';
-import { Button } from '../../src/components/button';
+import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { Screen } from '../../src/components/Screen';
 import { colors } from '../../src/theme/colors';
