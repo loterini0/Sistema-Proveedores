@@ -25,7 +25,7 @@ export default function EmpresasScreen(){
                     data={empresas}
                     keyExtractor={(empresa) => empresa.id}
                     contentContainerStyle={styles.content}
-                    ListHeaderConponent={
+                    ListHeaderComponent={
                         <View style={styles.header}>
                             <Text style={styles.title}>Empresas</Text>
                             <Text style={styles.subtitle}>
