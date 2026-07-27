@@ -3,7 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from "r
 import { router } from "expo-router";
 
 import { Badge } from "../../src/components/Badge";
-import { Button } from "../../src/components/button";
+import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
 import { mockCotizaciones, mockEmpresas, mockRfqs, mockUsuarios, Rfq, RfqStatus} from "../../src/services/mock.data";
@@ -28,7 +28,7 @@ const statusCopy: Record<
   draft: { label: "Borrador", badge: "default" },
   closed: { label: "Cerrada", badge: "error" },
   awarded: { label: "Adjudicada", badge: "warning" },
-  cacelled: { label: "Cancelada", badge: "error" },
+  cancelled: { label: "Cancelada", badge: "error" },
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-CO", {
