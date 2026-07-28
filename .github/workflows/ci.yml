@@ -41,6 +41,13 @@ jobs:
         working-directory: apps/api
         run: npx eslint src --ext .ts
 
+      - name: Run migrations
+        working-directory: apps/api
+        run: npm run db:migrate
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/sistema_proveedores_test
+
       - name: Run tests
         working-directory: apps/api
         run: npm test

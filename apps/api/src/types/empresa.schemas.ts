@@ -12,4 +12,13 @@ export const createEmpresaSchema = z.object({
   logoUrl: z.string().url().max(500).optional(),
 });
 
+export const searchEmpresasSchema = z.object({
+  q: z.string().min(1).max(255).optional(),
+  departamento: z.string().min(1).max(100).optional(),
+  categoriaId: z.string().uuid('categoriaId debe ser un uuid válido').optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+});
+
 export type CreateEmpresaDTO = z.infer<typeof createEmpresaSchema>;
+export type SearchEmpresasDTO = z.infer<typeof searchEmpresasSchema>;
