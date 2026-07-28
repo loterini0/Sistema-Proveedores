@@ -16,6 +16,16 @@ export const empresaService = {
     return empresa;
   },
 
+  async updateEmpresa(id: string, data: Partial<CreateEmpresaDTO>) {
+    const [empresa] = await db
+      .update(empresas)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(empresas.id, id))
+      .returning();
+
+    return empresa ?? null;
+  },
+
   async getEmpresaByUserId(userId: string) {
     const [empresa] = await db.select().from(empresas).where(eq(empresas.userId, userId)).limit(1);
     return empresa ?? null;

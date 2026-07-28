@@ -42,7 +42,24 @@ export const getEmpresa = async (req: Request, res: Response, next: NextFunction
 
 export const updateEmpresa = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json({ message: 'Empresa actualizada.' });
+    const { id } = req.params;
+    const userId = (req as any).user?.userId;
+
+    const empresa = await empresaService.getEmpresaWithProfile(id);
+    if (!empresa) {
+      return res.status(404).json({ error: 'Empresa no encontrada.' });
+    }
+
+    if (empresa.userId !== userId) {
+      return res.status(403).json({ error: 'No tienes permiso para editar esta empresa.' });
+    }
+
+    const actualizada = await empresaService.updateEmpresa(id, req.body);
+
+    res.json({
+      message: 'Empresa actualizada.',
+      empresa: actualizada,
+    });
   } catch (err) {
     next(err);
   }

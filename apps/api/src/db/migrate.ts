@@ -6,6 +6,7 @@ import * as path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+
 const DATABASE_URL = process.env.DATABASE_URL;
 const isProduction = process.env.NODE_ENV === 'production';
 

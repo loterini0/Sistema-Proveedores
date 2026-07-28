@@ -12,6 +12,8 @@ export const createEmpresaSchema = z.object({
   logoUrl: z.string().url().max(500).optional(),
 });
 
+export const updateEmpresaSchema = createEmpresaSchema.partial();
+
 export const searchEmpresasSchema = z.object({
   q: z.string().min(1).max(255).optional(),
   departamento: z.string().min(1).max(100).optional(),
@@ -21,4 +23,5 @@ export const searchEmpresasSchema = z.object({
 });
 
 export type CreateEmpresaDTO = z.infer<typeof createEmpresaSchema>;
+export type UpdateEmpresaDTO = z.infer<typeof updateEmpresaSchema>;
 export type SearchEmpresasDTO = z.infer<typeof searchEmpresasSchema>;
