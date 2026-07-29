@@ -4,8 +4,24 @@ import { cotizacionService } from '../services/cotizacion.service';
 
 export const createRFQ = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(201).json({ message: 'RFQ publicada exitosamente.' });
-  } catch (err) { next(err); }
+    const userId = (req as any).user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Token requerido.' });
+    }
+
+    const rfq = await rfqService.createRFQ(
+      userId,
+      req.body,
+      (req.files as Express.Multer.File[]) || [],
+    );
+
+    res.status(201).json({
+      message: 'RFQ creada exitosamente.',
+      data: rfq,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const listRFQs = async (req: Request, res: Response, next: NextFunction) => {
@@ -17,14 +33,14 @@ export const listRFQs = async (req: Request, res: Response, next: NextFunction) 
       compradorId,
       estado as any,
       Number(page),
-      Number(limit)
+      Number(limit),
     );
 
     res.json({
-      rfqs: result.rfqs,
+      data: result.rfqs,
       total: result.total,
-      page: Number(page),
-      limit: Number(limit),
+      page: result.page,
+      limit: result.limit,
     });
   } catch (err) {
     next(err);
@@ -34,14 +50,25 @@ export const listRFQs = async (req: Request, res: Response, next: NextFunction) 
 export const getRFQ = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    res.json({ id, titulo: 'RFQ Ejemplo' });
-  } catch (err) { next(err); }
+
+    const rfq = await rfqService.getRFQById(id);
+
+    if (!rfq) {
+      return res.status(404).json({ error: 'RFQ no encontrada.' });
+    }
+
+    res.json({ data: rfq });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const submitCotizacion = async (req: Request, res: Response, next: NextFunction) => {
   try {
     res.status(201).json({ message: 'Cotización enviada exitosamente.' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getCotizaciones = async (req: Request, res: Response, next: NextFunction) => {
@@ -55,12 +82,14 @@ export const getCotizaciones = async (req: Request, res: Response, next: NextFun
     }
 
     if (rfq.compradorId !== userId) {
-      return res.status(403).json({ error: 'No tienes permiso para ver las cotizaciones de esta RFQ.' });
+      return res
+        .status(403)
+        .json({ error: 'No tienes permiso para ver las cotizaciones de esta RFQ.' });
     }
 
     const cotizaciones = await cotizacionService.getCotizacionesByRFQ(id);
 
-    res.json({ rfqId: id, cotizaciones });
+    res.json({ data: { rfqId: id, cotizaciones } });
   } catch (err) {
     next(err);
   }

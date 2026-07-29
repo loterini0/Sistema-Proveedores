@@ -15,6 +15,13 @@
       "when": 1784669329217,
       "tag": "0001_nifty_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785235200000,
+      "tag": "0002_add_rfq_archivos_urls",
+      "breakpoints": true
     }
   ]
 }

@@ -81,6 +81,7 @@
     presupuesto: varchar('presupuesto', { length: 100 }),
     fechaLimite: timestamp('fecha_limite'),
     privada: boolean('privada').default(true).notNull(),
+    archivosUrls: text('archivos_urls').array(),
     status: rfqStatusEnum('status').default('active').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
