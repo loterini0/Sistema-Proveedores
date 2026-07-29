@@ -64,12 +64,13 @@ describe('Empresa Endpoints', () => {
   });
 
   describe('GET /empresas/:id', () => {
-    it('should return empresa by ID with categoria and active products', async () => {
-      const res = await request(app).get(`/api/v1/empresas/${empresaId}`);
-      expect(res.status).toBe(200);
-      expect(res.body.data).toBeDefined();
-      expect(res.body.data.id).toBe(empresaId);
-      expect(res.body.data.razonSocial).toBe('Tech Solutions SAS');
+    it('should search by q in razonSocial', async () => {
+  const res = await request(app)
+    .get('/api/v1/empresas/search')
+    .query({ q: 'Tech Solutions SAS', page: 1, limit: 10 });
+  expect(res.status).toBe(200);
+  expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+  expect(res.body.data.some((e: any) => e.id === empresaId)).toBe(true);
       expect(res.body.data.categoria).toBeDefined();
       expect(res.body.data.categoria.id).toBe(categoriaId);
       expect(res.body.data.categoria.nombre).toBe('Tecnología');

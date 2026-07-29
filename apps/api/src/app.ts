@@ -13,6 +13,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 
 const app = express();
+app.set('trust proxy', 1); // ← agregar esta línea
 
 app.use(helmet());
 app.use(cors({
