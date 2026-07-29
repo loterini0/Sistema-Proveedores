@@ -1,19 +1,21 @@
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('dotenv').config();
+}
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-
 import authRoutes from './routes/auth.routes';
 import empresaRoutes from './routes/empresa.routes';
 import rfqRoutes from './routes/rfq.routes';
 import categoriaRoutes from './routes/categoria.routes';
-
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 
 const app = express();
-app.set('trust proxy', 1); // ← agregar esta línea
+app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({
