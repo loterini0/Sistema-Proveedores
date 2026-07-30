@@ -31,6 +31,15 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Evita que clientes HTTP (OkHttp en Android, etc.) cacheen respuestas de la API
+// usando ETags automáticos de Express. Sin esto, endpoints como /auth/me pueden
+// devolver datos desactualizados (304 con caché vieja) tras cambios recientes
+// del usuario, como registrar una empresa.
+app.use('/api/', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
