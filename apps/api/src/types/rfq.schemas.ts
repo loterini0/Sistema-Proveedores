@@ -15,10 +15,11 @@ export const createRFQSchema = z.object({
   categoriaId: z.string().uuid('categoriaId debe ser un uuid válido').optional(),
   cantidad: z.string().max(100).optional(),
   presupuesto: z.string().max(100).optional(),
-  fechaLimite: z.coerce.date().optional(),
-  privada: booleanish.optional().default(true),
-  // ids de empresas invitadas cuando la RFQ es privada
-  destinatarios: z.array(z.string().uuid()).optional().default([]),
+  fechaLimite: z.coerce.date({ required_error: 'fechaLimite es requerida' }),
+  // MVP: toda RFQ es privada — no se acepta como campo del cliente, se fuerza en el service.
+  // ids de empresas invitadas — obligatorio y con al menos 1, si no la RFQ queda
+  // creada pero invisible para cualquier proveedor (nadie en rfqDestinatarios).
+  destinatarios: z.array(z.string().uuid()).min(1, 'Debes invitar al menos una empresa'),
 });
 
 export const listRFQsSchema = z.object({

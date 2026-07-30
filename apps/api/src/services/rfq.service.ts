@@ -13,17 +13,16 @@ export const rfqService = {
         compradorId,
         empresaCompradorId,
         ...rfqData,
+        privada: true, // MVP: siempre privada, sin importar lo que mande el cliente
       })
       .returning();
 
-    if (rfq.privada && destinatarios && destinatarios.length > 0) {
-      await db.insert(rfqDestinatarios).values(
-        destinatarios.map((empresaId) => ({
-          rfqId: rfq.id,
-          empresaId,
-        })),
-      );
-    }
+    await db.insert(rfqDestinatarios).values(
+      destinatarios.map((empresaId) => ({
+        rfqId: rfq.id,
+        empresaId,
+      })),
+    );
 
     return rfq;
   },

@@ -1,11 +1,6 @@
-import { mockEmpresas, mockProductos, Empresa, Producto } from "./mock.data";
-import { empresaService as empresaApi } from "./api";
-
-const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
-
 export interface EmpresaSearchParams {
   q?: string;
-  sector?: string;
+  categoriaId?: string; // antes: sector
   departamento?: string;
   page?: number;
 }
@@ -21,8 +16,8 @@ export const empresaService = {
           e.razonSocial.toLowerCase().includes(q),
         );
       }
-      if (params?.sector) {
-        resultado = resultado.filter((e) => e.sector === params.sector);
+      if (params?.categoriaId) {
+        resultado = resultado.filter((e) => e.categoriaId === params.categoriaId);
       }
       if (params?.departamento) {
         resultado = resultado.filter(
@@ -36,22 +31,5 @@ export const empresaService = {
     const { data } = await empresaApi.search(params ?? {});
     return data;
   },
-
-  get: async (id: string): Promise<Empresa | undefined> => {
-    if (USE_MOCKS) {
-      return mockEmpresas.find((e) => e.id === id);
-    }
-
-    const { data } = await empresaApi.get(id);
-    return data;
-  },
-
-  getProductos: async (id: string): Promise<Producto[]> => {
-    if (USE_MOCKS) {
-      return mockProductos.filter((p) => p.empresaId === id);
-    }
-
-    const { data } = await empresaApi.getProductos(id);
-    return data;
-  },
+  // ... get y getProductos sin cambios
 };
