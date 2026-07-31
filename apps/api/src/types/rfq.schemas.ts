@@ -26,11 +26,9 @@ export const listRFQsSchema = z.object({
   estado: z.enum(rfqStatusValues).optional(),
   // Si es true, solo devuelve las RFQs que YO publiqué (dashboard del comprador).
   // Por defecto, devuelve todas las RFQs que puedo VER: las mías + públicas + privadas donde me invitaron.
-  soloMias: z
-    .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
-    .transform((v) => v === true || v === 'true' || v === '1')
-    .optional()
-    .default(false),
+  soloMias: booleanish
+  .optional()
+  .default(false),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
