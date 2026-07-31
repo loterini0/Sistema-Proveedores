@@ -42,12 +42,11 @@ export default function RootLayout() {
         </Stack.Protected>
 
 
-        <Stack.Protected guard={!isAuthenticated}>
-          <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-          <Stack.Screen name="empresas" options={{ headerShown: false }} />
-          <Stack.Screen name="rfq" options={{ headerShown: false}} />
-
-        </Stack.Protected>
+        <Stack.Protected guard={isAuthenticated}>
+  <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+  <Stack.Screen name="empresas" options={{ headerShown: false }} />
+  <Stack.Screen name="rfq" options={{ headerShown: false}} />
+</Stack.Protected>
       </Stack>
     </QueryClientProvider>
   );

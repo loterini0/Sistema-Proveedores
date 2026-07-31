@@ -6,6 +6,7 @@ export default function RfqLayout() {
       <Stack.Screen name="index" options={{ title: 'RFQ' }} />
       <Stack.Screen name="[id]" options={{ title: 'Detalle RFQ' }} />
       <Stack.Screen name="nueva" options={{ title: "Nueva RFQ" }}/>
+      <Stack.Screen name="cotizar" options={{ title: "Enviar cotización" }}/>
     </Stack>
   );
 }

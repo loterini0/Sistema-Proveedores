@@ -1,13 +1,13 @@
-import React, { useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
 
 import { Badge } from "../../src/components/Badge";
 import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
-import { mockCotizaciones, mockEmpresas, mockRfqs, mockUsuarios, Rfq, RfqStatus} from "../../src/services/mock.data";
-import { useAuthStore } from "../../src/store/auth.store";
+import { mockCotizaciones, Rfq, RfqStatus } from "../../src/services/mock.data";
+import { rfqService } from "../../src/services/rfq.service";
 import { colors } from "../../src/theme/colors";
 
 type StatusFilter = "all" | RfqStatus;
@@ -38,30 +38,29 @@ const dateFormatter = new Intl.DateTimeFormat("es-CO", {
 });
 
 export default function RfqsScreen() {
-  const authUser = useAuthStore((state) => state.user);
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
+  const [allRfqs, setAllRfqs] = useState<Rfq[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const currentUserId = authUser?.id ?? mockUsuarios[0]?.id;
+  const loadRfqs = () => {
+    setLoading(true);
+    setError(false);
+    rfqService
+      .list()
+      .then(setAllRfqs)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  };
 
-  const buyerEmpresaIds = useMemo(
-    () =>
-      mockEmpresas
-        .filter((empresa) => empresa.userId === currentUserId)
-        .map((empresa) => empresa.id),
-    [currentUserId],
-  );
+  useEffect(() => {
+    loadRfqs();
+  }, []);
 
   const rfqs = useMemo(() => {
-    const userRfqs = mockRfqs.filter((rfq) =>
-      buyerEmpresaIds.includes(rfq.compradorId),
-    );
-
-    if (selectedStatus === "all") {
-      return userRfqs;
-    }
-
-    return userRfqs.filter((rfq) => rfq.status === selectedStatus);
-  }, [buyerEmpresaIds, selectedStatus]);
+    if (selectedStatus === "all") return allRfqs;
+    return allRfqs.filter((rfq) => rfq.status === selectedStatus);
+  }, [allRfqs, selectedStatus]);
 
   const handleCreateRfq = () => {
     router.push("/rfq/nueva");
@@ -78,10 +77,10 @@ export default function RfqsScreen() {
     <Screen style={styles.screen}>
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text style={styles.eyebrow}>Dashboard comprador</Text>
+          <Text style={styles.eyebrow}>RFQs</Text>
           <Text style={styles.title}>RFQs</Text>
           <Text style={styles.subtitle}>
-            Gestiona tus solicitudes y revisa las cotizaciones recibidas.
+            Las que publicaste, más las que te invitaron a cotizar.
           </Text>
         </View>
 
@@ -116,27 +115,41 @@ export default function RfqsScreen() {
         })}
       </View>
 
-      <FlatList
-        data={rfqs}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <RfqCard
-            rfq={item}
-            quoteCount={
-              mockCotizaciones.filter(
-                (cotizacion) => cotizacion.rfqId === item.id,
-              ).length
-            }
-            onPress={() => handleOpenRfq(item.id)}
-          />
-        )}
-        contentContainerStyle={[
-          styles.listContent,
-          rfqs.length === 0 && styles.emptyListContent,
-        ]}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={<EmptyState onCreate={handleCreateRfq} />}
-      />
+      {loading ? (
+        <ActivityIndicator color={colors.primary} style={styles.loader} />
+      ) : error ? (
+        <Card style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>No se pudo cargar las RFQs</Text>
+          <Text style={styles.emptyText}>
+            Revisa tu conexión y que la API esté corriendo.
+          </Text>
+          <Button label="Reintentar" onPress={loadRfqs} style={styles.emptyButton} />
+        </Card>
+      ) : (
+        <FlatList
+          data={rfqs}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <RfqCard
+              rfq={item}
+              quoteCount={
+                mockCotizaciones.filter(
+                  (cotizacion) => cotizacion.rfqId === item.id,
+                ).length
+              }
+              onPress={() => handleOpenRfq(item.id)}
+            />
+          )}
+          contentContainerStyle={[
+            styles.listContent,
+            rfqs.length === 0 && styles.emptyListContent,
+          ]}
+          showsVerticalScrollIndicator={false}
+          onRefresh={loadRfqs}
+          refreshing={false}
+          ListEmptyComponent={<EmptyState onCreate={handleCreateRfq} />}
+        />
+      )}
     </Screen>
   );
 }
@@ -253,6 +266,9 @@ const styles = StyleSheet.create({
   emptyListContent: {
     flexGrow: 1,
     justifyContent: "center",
+  },
+  loader: {
+    marginTop: 40,
   },
   pressed: {
     opacity: 0.82,

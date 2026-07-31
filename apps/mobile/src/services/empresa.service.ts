@@ -1,3 +1,8 @@
+import { mockEmpresas, mockProductos, Empresa, Producto } from "./mock.data";
+import { empresaService as empresaApi } from "./api";
+
+const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
+
 export interface EmpresaSearchParams {
   q?: string;
   categoriaId?: string; // antes: sector
@@ -28,8 +33,60 @@ export const empresaService = {
       return resultado;
     }
 
+    // El backend responde { data: [...], total, page, limit }
     const { data } = await empresaApi.search(params ?? {});
-    return data;
+    return data.data;
   },
-  // ... get y getProductos sin cambios
+
+  get: async (id: string): Promise<Empresa | undefined> => {
+    if (USE_MOCKS) {
+      return mockEmpresas.find((e) => e.id === id);
+    }
+
+    // El backend responde { data: {...} }
+    const { data } = await empresaApi.get(id);
+    return data.data;
+  },
+
+  getProductos: async (id: string): Promise<Producto[]> => {
+    if (USE_MOCKS) {
+      return mockProductos.filter((p) => p.empresaId === id);
+    }
+
+    // El backend responde { productos: [...] }
+    const { data } = await empresaApi.getProductos(id);
+    return data.productos;
+  },
+
+  create: async (payload: {
+    razonSocial: string;
+    categoriaId: string;
+    nit?: string;
+    descripcion?: string;
+    ciudad?: string;
+    departamento?: string;
+    telefono?: string;
+    website?: string;
+  }): Promise<Empresa> => {
+    // Registrar tu empresa siempre pega contra la API real.
+    const { data } = await empresaApi.create(payload);
+    return data.empresa;
+  },
+
+  update: async (
+    id: string,
+    payload: Partial<{
+      razonSocial: string;
+      categoriaId: string;
+      nit: string;
+      descripcion: string;
+      ciudad: string;
+      departamento: string;
+      telefono: string;
+      website: string;
+    }>,
+  ): Promise<Empresa> => {
+    const { data } = await empresaApi.update(id, payload);
+    return data.empresa;
+  },
 };

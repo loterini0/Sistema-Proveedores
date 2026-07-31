@@ -44,7 +44,10 @@ export const empresaService = {
     departamento?: string;
     page?: number;
   }) => api.get("/empresas/search", { params }),
-  // ... resto igual
+  get: (id: string) => api.get(`/empresas/${id}`),
+  create: (data: unknown) => api.post("/empresas", data),
+  update: (id: string, data: unknown) => api.put(`/empresas/${id}`, data),
+  getProductos: (id: string) => api.get(`/empresas/${id}/productos`),
 };
 
 export const rfqService = {

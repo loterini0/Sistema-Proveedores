@@ -37,6 +37,14 @@ export default function PerfilScreen() {
                     </Text>
                 </Card>
 
+                {!user?.empresaId && (
+                    <Button
+                        label="Registrar mi empresa"
+                        variant="outline"
+                        onPress={() => router.push("/empresas/nueva")}
+                    />
+                )}
+
                 <Button label = "Cerrar sesion" variant="danger" onPress={handleLogout}/>
             </View>
         </Screen>

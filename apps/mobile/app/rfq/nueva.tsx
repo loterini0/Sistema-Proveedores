@@ -14,11 +14,15 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
+import axios from "axios";
 
 import { Button } from "../../src/components/Button";
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
 import { colors } from "../../src/theme/colors";
+import { rfqService } from "../../src/services/rfq.service";
+import { empresaService } from "../../src/services/empresa.service";
+import { Empresa } from "../../src/services/mock.data";
 
 interface FormValues {
   titulo: string;
@@ -60,6 +64,13 @@ export default function NuevaRfqScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState(() => new Date());
+
+  // MVP: toda RFQ es privada, hay que invitar al menos una empresa.
+  const [empresaQuery, setEmpresaQuery] = useState("");
+  const [empresaResultados, setEmpresaResultados] = useState<Empresa[]>([]);
+  const [buscandoEmpresas, setBuscandoEmpresas] = useState(false);
+  const [destinatarios, setDestinatarios] = useState<Empresa[]>([]);
+  const [destinatariosError, setDestinatariosError] = useState<string | null>(null);
 
   const selectedDateLabel = values.fechaLimite
     ? dateFormatter.format(new Date(`${values.fechaLimite}T12:00:00`))
@@ -117,21 +128,61 @@ export default function NuevaRfqScreen() {
     setDatePickerOpen(false);
   };
 
+  const handleBuscarEmpresas = async () => {
+    setBuscandoEmpresas(true);
+    try {
+      const resultados = await empresaService.search({ q: empresaQuery || undefined });
+      setEmpresaResultados(resultados);
+    } catch {
+      setEmpresaResultados([]);
+    } finally {
+      setBuscandoEmpresas(false);
+    }
+  };
+
+  const toggleDestinatario = (empresa: Empresa) => {
+    setDestinatariosError(null);
+    setDestinatarios((current) =>
+      current.some((e) => e.id === empresa.id)
+        ? current.filter((e) => e.id !== empresa.id)
+        : [...current, empresa],
+    );
+  };
+
   const handleSubmit = async () => {
     const nextErrors = validate(values);
     setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
+    let hasDestinatariosError = false;
+    if (destinatarios.length === 0) {
+      setDestinatariosError("Invita al menos una empresa a cotizar.");
+      hasDestinatariosError = true;
+    }
+
+    if (Object.keys(nextErrors).length > 0 || hasDestinatariosError) {
       return;
     }
 
     setSubmitting(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      await rfqService.create({
+        titulo: values.titulo,
+        descripcion: values.descripcion,
+        cantidad: values.cantidad || undefined,
+        presupuesto: values.presupuesto || undefined,
+        fechaLimite: values.fechaLimite,
+        destinatarios: destinatarios.map((e) => e.id),
+        attachments: attachments.map((file) => ({
+          uri: file.uri,
+          name: file.name,
+          mimeType: file.mimeType,
+        })),
+      });
       router.replace("/rfqs");
-    } catch {
-      Alert.alert("Error", "No se pudo crear la RFQ. Intenta de nuevo.");
+    } catch (err: any) {
+      const backendError = axios.isAxiosError(err) ? err.response?.data?.error : undefined;
+      Alert.alert("Error", backendError ?? "No se pudo crear la RFQ. Intenta de nuevo.");
     } finally {
       setSubmitting(false);
     }
@@ -258,6 +309,59 @@ export default function NuevaRfqScreen() {
         {!!errors.attachments && (
           <Text style={styles.errorText}>{errors.attachments}</Text>
         )}
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Invitar empresas a cotizar *</Text>
+
+          {destinatarios.length > 0 && (
+            <View style={styles.destinatariosSelected}>
+              {destinatarios.map((empresa) => (
+                <TouchableOpacity
+                  key={empresa.id}
+                  onPress={() => toggleDestinatario(empresa)}
+                  style={styles.destinatarioChip}
+                >
+                  <Text style={styles.destinatarioChipText}>{empresa.razonSocial} ✕</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          <View style={styles.searchRow}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar empresa por nombre"
+              value={empresaQuery}
+              onChangeText={setEmpresaQuery}
+              onSubmitEditing={handleBuscarEmpresas}
+            />
+            <TouchableOpacity style={styles.searchButton} onPress={handleBuscarEmpresas}>
+              <Text style={styles.searchButtonText}>{buscandoEmpresas ? "..." : "Buscar"}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {empresaResultados.length > 0 && (
+            <View style={styles.destinatariosResults}>
+              {empresaResultados.map((empresa) => {
+                const selected = destinatarios.some((e) => e.id === empresa.id);
+                return (
+                  <TouchableOpacity
+                    key={empresa.id}
+                    onPress={() => toggleDestinatario(empresa)}
+                    style={[styles.resultRow, selected && styles.resultRowSelected]}
+                  >
+                    <Text style={styles.resultText}>{empresa.razonSocial}</Text>
+                    <Text style={styles.resultAction}>{selected ? "Quitar" : "Invitar"}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+
+          {!!destinatariosError && (
+            <Text style={styles.errorText}>{destinatariosError}</Text>
+          )}
+        </View>
 
         <Button
           label="Crear RFQ"
@@ -630,6 +734,75 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 18,
+  },
+  destinatariosSelected: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 10,
+  },
+  destinatarioChip: {
+    backgroundColor: colors.primary,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  destinatarioChipText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  searchRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: colors.text,
+  },
+  searchButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    justifyContent: "center",
+  },
+  searchButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+  destinatariosResults: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  resultRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  resultRowSelected: {
+    backgroundColor: "#E3F1EA",
+  },
+  resultText: {
+    color: colors.text,
+    fontSize: 14,
+  },
+  resultAction: {
+    color: colors.primary,
+    fontWeight: "700",
+    fontSize: 13,
   },
   modalBackdrop: {
     alignItems: "center",

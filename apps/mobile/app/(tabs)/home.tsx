@@ -6,9 +6,9 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Search, ShieldCheck } from 'lucide-react-native';
-import { colors } from '../src/theme/colors';
-import { categoriaService } from '../src/services/categoria.service';
-import type { Categoria } from '../src/services/mock.data';
+import { colors } from '../../src/theme/colors';
+import { categoriaService } from '../../src/services/categoria.service';
+import type { Categoria } from '../../src/services/mock.data';
 
 export default function HomeScreen() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);

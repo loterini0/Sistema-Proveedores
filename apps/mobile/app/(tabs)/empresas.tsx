@@ -21,41 +21,47 @@ export default function EmpresasScreen(){
     if(loading){
         return(
             <Screen>
-                <FlatList
-                    data={empresas}
-                    keyExtractor={(empresa) => empresa.id}
-                    contentContainerStyle={styles.content}
-                    ListHeaderComponent={
-                        <View style={styles.header}>
-                            <Text style={styles.title}>Empresas</Text>
-                            <Text style={styles.subtitle}>
-                                Explora proveedores registrados en la plataforma
-                            </Text>
-                        </View>
-                    }
-                    renderItem={({item}) => (
-                        <Pressable
-                            onPress={() =>
-                                router.push({pathname: "/empresas/[id]", params: {id: item.id}})
-                            }
-                        >
-                            <Card style={styles.card}>
-                                <Text style={styles.name}>{item.razonSocial}</Text>
-                                <Text style={styles.location}>
-                                    {item.ciudad}, {item.departamento}
-                                </Text>
-                                {!!item.descripcion && (
-                                    <Text style={styles.description} numberOfLines={2}>
-                                        {item.descripcion}
-                                    </Text>
-                                )}
-                            </Card>
-                        </Pressable>
-                    )}
-                />
+                <ActivityIndicator color={colors.primary} />
             </Screen>
         )
     }
+
+    return(
+        <Screen>
+            <FlatList
+                data={empresas}
+                keyExtractor={(empresa) => empresa.id}
+                contentContainerStyle={styles.content}
+                ListHeaderComponent={
+                    <View style={styles.header}>
+                        <Text style={styles.title}>Empresas</Text>
+                        <Text style={styles.subtitle}>
+                            Explora proveedores registrados en la plataforma
+                        </Text>
+                    </View>
+                }
+                renderItem={({item}) => (
+                    <Pressable
+                        onPress={() =>
+                            router.push({pathname: "/empresas/[id]", params: {id: item.id}})
+                        }
+                    >
+                        <Card style={styles.card}>
+                            <Text style={styles.name}>{item.razonSocial}</Text>
+                            <Text style={styles.location}>
+                                {item.ciudad}, {item.departamento}
+                            </Text>
+                            {!!item.descripcion && (
+                                <Text style={styles.description} numberOfLines={2}>
+                                    {item.descripcion}
+                                </Text>
+                            )}
+                        </Card>
+                    </Pressable>
+                )}
+            />
+        </Screen>
+    )
 }
 
 

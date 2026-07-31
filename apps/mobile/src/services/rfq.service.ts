@@ -25,6 +25,7 @@ export const rfqService = {
       return resultado;
     }
 
+    // El backend responde { rfqs: [...], total, page, limit }
     const { data } = await rfqApi.list(
       params
         ? {
@@ -32,7 +33,7 @@ export const rfqService = {
           }
         : undefined,
     );
-    return data;
+    return data.rfqs;
   },
 
   get: async (id: string): Promise<Rfq | undefined> => {
@@ -40,8 +41,9 @@ export const rfqService = {
       return mockRfqs.find((r) => r.id === id);
     }
 
+    // El backend responde { data: {...} }
     const { data } = await rfqApi.get(id);
-    return data;
+    return data.data;
   },
 
   getCotizaciones: async (rfqId: string): Promise<Cotizacion[]> => {
@@ -49,8 +51,9 @@ export const rfqService = {
       return mockCotizaciones.filter((c) => c.rfqId === rfqId);
     }
 
+    // El backend responde { rfqId, cotizaciones: [...] }
     const { data } = await rfqApi.getCotizaciones(rfqId);
-    return data;
+    return data.cotizaciones;
   },
 
   // Solo aplica para RFQs privadas: qué empresas fueron invitadas a cotizar.
@@ -68,4 +71,57 @@ export const rfqService = {
 
   // create y submitCotizacion mandan FormData (multipart) y siempre pegan
   // contra la API real, sin importar EXPO_PUBLIC_USE_MOCKS.
+  create: async (data: {
+    titulo: string;
+    descripcion: string;
+    cantidad?: string;
+    presupuesto?: string;
+    fechaLimite: string;
+    // MVP: toda RFQ es privada, así que siempre hay que invitar al menos
+    // una empresa — el backend rechaza la petición si viene vacío.
+    destinatarios: string[];
+    attachments?: { uri: string; name: string; mimeType?: string }[];
+  }): Promise<Rfq> => {
+    const formData = new FormData();
+    formData.append("titulo", data.titulo);
+    formData.append("descripcion", data.descripcion);
+    if (data.cantidad) formData.append("cantidad", data.cantidad);
+    if (data.presupuesto) formData.append("presupuesto", data.presupuesto);
+    formData.append("fechaLimite", data.fechaLimite);
+    for (const empresaId of data.destinatarios) {
+      formData.append("destinatarios", empresaId);
+    }
+
+    for (const file of data.attachments ?? []) {
+      // @ts-expect-error React Native FormData acepta este shape para archivos,
+      // aunque no calce exactamente con el tipo Blob del DOM.
+      formData.append("adjuntos", {
+        uri: file.uri,
+        name: file.name,
+        type: file.mimeType ?? "application/octet-stream",
+      });
+    }
+
+    const { data: res } = await rfqApi.create(formData);
+    return res.rfq;
+  },
+
+  submitCotizacion: async (
+    rfqId: string,
+    data: {
+      precioUnitario?: string;
+      precioTotal?: string;
+      plazoEntrega?: string;
+      condicionesPago?: string;
+      observaciones?: string;
+    },
+  ): Promise<Cotizacion> => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value) formData.append(key, value);
+    });
+
+    const { data: res } = await rfqApi.submitCotizacion(rfqId, formData);
+    return res.cotizacion;
+  },
 };
