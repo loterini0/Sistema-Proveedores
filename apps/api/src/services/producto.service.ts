@@ -1,6 +1,6 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "../db";
-import { productos } from "../db/schema";
+import { empresas, productos } from "../db/schema";
 import type { CreateProductoDTO } from "../types/producto.schemas";
 
 const DEFAULT_MAX_PRODUCTOS = 50;
@@ -26,9 +26,10 @@ export const productoService = {
     const limite = Number(process.env.MAX_PRODUCTOS_POR_EMPRESA) || DEFAULT_MAX_PRODUCTOS;
 
     if (totalProductos >= limite) {
-      throw Object.assign(new Error(`La empresa alcanzó el límite de ${limite} productos`), {
-        status: 409,
-      });
+      throw Object.assign(
+        new Error(`La empresa alcanzó el límite de ${limite} productos`),
+        { status: 409 }
+      );
     }
 
     const [producto] = await db
@@ -37,5 +38,22 @@ export const productoService = {
       .returning();
 
     return producto;
+  },
+
+  async getRecientes(limit = 8) {
+    return db
+      .select({
+        id: productos.id,
+        nombre: productos.nombre,
+        precio: productos.precio,
+        imagenUrl: productos.imagenUrl,
+        empresaId: productos.empresaId,
+        empresaNombre: empresas.razonSocial,
+      })
+      .from(productos)
+      .innerJoin(empresas, eq(productos.empresaId, empresas.id))
+      .where(eq(productos.activo, true))
+      .orderBy(desc(productos.createdAt))
+      .limit(limit);
   },
 };

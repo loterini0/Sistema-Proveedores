@@ -9,7 +9,8 @@
     "lint": "eslint src --ext .ts",
     "test": "jest --coverage --passWithNoTests",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts"
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
     "express": "^4.19.2",

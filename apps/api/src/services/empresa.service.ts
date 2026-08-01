@@ -57,29 +57,26 @@ export const empresaService = {
   },
 
   async searchEmpresas(options: {
-    q?: string;
-    departamento?: string;
-    categoriaId?: string;
-    page?: number;
-    limit?: number;
-  }) {
-    const { q, departamento, categoriaId, page = 1, limit = 10 } = options;
-    const offset = (page - 1) * limit;
+  q?: string;
+  departamento?: string;
+  categoriaId?: string;
+  destacada?: boolean; // NUEVO
+  page?: number;
+  limit?: number;
+}) {
+  const { q, departamento, categoriaId, destacada, page = 1, limit = 10 } = options;
+  const offset = (page - 1) * limit;
 
-    const conditions: any[] = [];
+  const conditions: any[] = [];
 
-    if (q) {
-      const pattern = `%${q}%`;
-      conditions.push(or(ilike(empresas.razonSocial, pattern), ilike(productos.nombre, pattern)));
-    }
+  if (q) {
+    const pattern = `%${q}%`;
+    conditions.push(or(ilike(empresas.razonSocial, pattern), ilike(productos.nombre, pattern)));
+  }
+  if (departamento) conditions.push(eq(empresas.departamento, departamento));
+  if (categoriaId) conditions.push(eq(empresas.categoriaId, categoriaId));
+  if (destacada) conditions.push(eq(empresas.destacada, true)); // NUEVO
 
-    if (departamento) {
-      conditions.push(eq(empresas.departamento, departamento));
-    }
-
-    if (categoriaId) {
-      conditions.push(eq(empresas.categoriaId, categoriaId));
-    }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 

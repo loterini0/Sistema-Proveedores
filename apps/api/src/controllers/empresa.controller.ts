@@ -67,22 +67,16 @@ export const updateEmpresa = async (req: Request, res: Response, next: NextFunct
 
 export const searchEmpresas = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { q, departamento, categoriaId, page = 1, limit = 10 } = req.query as Record<string, any>;
+    const { q, departamento, categoriaId, destacada, page = 1, limit = 10 } = req.query as Record<string, any>;
 
     const result = await empresaService.searchEmpresas({
-      q,
-      departamento,
-      categoriaId,
+      q, departamento, categoriaId,
+      destacada: destacada === 'true', // NUEVO
       page: Number(page),
       limit: Number(limit),
     });
 
-    res.json({
-      data: result.empresas,
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
-    });
+    res.json({ data: result.empresas, total: result.total, page: result.page, limit: result.limit });
   } catch (err) {
     next(err);
   }
