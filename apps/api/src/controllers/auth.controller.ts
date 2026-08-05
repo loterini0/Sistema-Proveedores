@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
+import { emailService } from '../services/email.service';
 
 // RF-AUTH-01: Registro
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -7,8 +8,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const { nombre, email, password } = req.body;
     const { user, verifyToken } = await authService.register(nombre, email, password);
 
-    // TODO: enviar email con verifyToken
-    console.log('Verify token:', verifyToken);
+    await emailService.enviarVerificacion(email, nombre, verifyToken); // reemplaza el console.log
 
     res.status(201).json({
       message: 'Usuario creado. Revisa tu email para verificar tu cuenta.',
@@ -41,8 +41,9 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
     const { email } = req.body;
     const result = await authService.forgotPassword(email);
 
-    // TODO: enviar email con resetToken
-    if (result) console.log('Reset token:', result.resetToken);
+    if (result) {
+      await emailService.enviarResetPassword(email, result.resetToken); // reemplaza el console.log
+    }
 
     res.json({
       message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña.',
