@@ -17,36 +17,36 @@ export default function RootLayout() {
     void restoreSession();
   }, [restoreSession]);
 
-  if(!isHydrated){
-    return(
-      <View 
+  if (!isHydrated) {
+    return (
+      <View
         style={{
-          flex:1,
+          flex: 1,
           justifyContent: "center",
           alignItems: "center",
           backgroundColor: colors.background,
         }}
       >
-        <ActivityIndicator size = "large" color = {colors.primary}/>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
-    )
+    );
   }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{headerBackTitle: "Atras"}}>
+      <Stack screenOptions={{ headerBackTitle: "Atras" }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        
+
         <Stack.Protected guard={!isAuthenticated}>
           <Stack.Screen name="auth" options={{ headerShown: false }} />
         </Stack.Protected>
 
-
-        <Stack.Protected guard={isAuthenticated}>
-  <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-  <Stack.Screen name="empresas" options={{ headerShown: false }} />
-  <Stack.Screen name="rfq" options={{ headerShown: false}} />
-</Stack.Protected>
+        {/* Landing pública: tabs, empresas y rfq ahora se pueden ver sin sesión.
+            Las acciones que sí requieren estar logueado (cotizar, crear RFQ,
+            dashboard de empresa) se protegen a nivel de pantalla, no acá. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="empresas" options={{ headerShown: false }} />
+        <Stack.Screen name="rfq" options={{ headerShown: false }} />
       </Stack>
     </QueryClientProvider>
   );

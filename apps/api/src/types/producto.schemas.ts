@@ -10,6 +10,8 @@ export const createProductoSchema = z.object({
 
   precio: z.string().optional(),
 
+  categoriaId: z.string().uuid("categoriaId debe ser un uuid válido").optional(),
+
   imagenUrl: z
     .string()
     .url("La URL de la imagen no es válida")
@@ -17,4 +19,7 @@ export const createProductoSchema = z.object({
     .optional(),
 });
 
+export const updateProductoSchema = createProductoSchema.partial();
+
 export type CreateProductoDTO = z.infer<typeof createProductoSchema>;
+export type UpdateProductoDTO = z.infer<typeof updateProductoSchema>;

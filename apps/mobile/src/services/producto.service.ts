@@ -2,21 +2,13 @@ import { api } from './api';
 
 export const productoService = {
   recientes: async () => {
-    try {
-      const res = await api.get('/empresas/search', { params: { limit: 6 } });
-      const empresas = res.data?.data ?? [];
-      const productos: any[] = [];
-      empresas.forEach((e: any) => {
-        if (e.productos) {
-          e.productos.forEach((p: any) => {
-            productos.push({ ...p, empresaNombre: e.razonSocial, empresaId: e.id });
-          });
-        }
-      });
-      return productos;
-    } catch {
-      return [];
-    }
+    const { data } = await api.get('/productos/recientes');
+    return data.data;
+  },
+
+  get: async (id: string) => {
+    const { data } = await api.get(`/productos/${id}`);
+    return data.data;
   },
 
   getByEmpresa: async (empresaId: string) => {

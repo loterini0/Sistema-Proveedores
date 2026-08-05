@@ -1,8 +1,11 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/theme/colors";
+import { useAuthStore } from "../../src/store/auth.store";
 
 export default function TabsLayout() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
     <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.textSecondary }}>
       <Tabs.Screen
@@ -19,20 +22,23 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="business-outline" color={color} size={size} />
         }}
       />
-      <Tabs.Screen
-        name="rfqs"
-        options={{
-          title: "RFQs",
-          tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" color={color} size={size} />
-        }}
-      />
-      <Tabs.Screen
-        name="perfil"
-        options={{
-          title: "Perfil",
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" color={color} size={size} />
-        }}
-      />
+
+      <Tabs.Protected guard={isAuthenticated}>
+        <Tabs.Screen
+          name="rfqs"
+          options={{
+            title: "RFQs",
+            tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" color={color} size={size} />
+          }}
+        />
+        <Tabs.Screen
+          name="perfil"
+          options={{
+            title: "Perfil",
+            tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" color={color} size={size} />
+          }}
+        />
+      </Tabs.Protected>
     </Tabs>
   );
 }

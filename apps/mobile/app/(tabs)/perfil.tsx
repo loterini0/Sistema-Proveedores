@@ -37,7 +37,12 @@ export default function PerfilScreen() {
                     </Text>
                 </Card>
 
-                {!user?.empresaId && (
+                {user?.empresaId ? (
+                    <Button
+                        label="Ir a mi empresa"
+                        onPress={() => router.push("/empresas/dashboard")}
+                    />
+                ) : (
                     <Button
                         label="Registrar mi empresa"
                         variant="outline"

@@ -1,5 +1,5 @@
-export * from "./Button";  +
-export * from "./Input";  
+export * from "./Button";
+export * from "./Input";
 export * from "./Card";
 export * from "./Screen";
 export * from "./Badge";

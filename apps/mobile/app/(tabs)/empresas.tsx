@@ -1,32 +1,34 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Card } from "../../src/components/Card";
 import { Screen } from "../../src/components/Screen";
 import { Empresa } from "../../src/services/mock.data";
 import { empresaService } from "../../src/services/empresa.service";
 import { colors } from "../../src/theme/colors";
 
-export default function EmpresasScreen(){
-    const [empresas, setEmpresas] = useState<Empresa[]>([])
-    const [loading, setLoading] = useState(true)
+export default function EmpresasScreen() {
+    const { q, categoriaId } = useLocalSearchParams<{ q?: string; categoriaId?: string }>();
+    const [empresas, setEmpresas] = useState<Empresa[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         empresaService
-            .search()
+            .search({ q, categoriaId } as any)
             .then(setEmpresas)
             .finally(() => setLoading(false));
-    }, []);
+    }, [q, categoriaId]);
 
-    if(loading){
-        return(
+    if (loading) {
+        return (
             <Screen>
                 <ActivityIndicator color={colors.primary} />
             </Screen>
-        )
+        );
     }
 
-    return(
+    return (
         <Screen>
             <FlatList
                 data={empresas}
@@ -36,14 +38,19 @@ export default function EmpresasScreen(){
                     <View style={styles.header}>
                         <Text style={styles.title}>Empresas</Text>
                         <Text style={styles.subtitle}>
-                            Explora proveedores registrados en la plataforma
+                            {q
+                                ? `Resultados para "${q}"`
+                                : "Explora proveedores registrados en la plataforma"}
                         </Text>
                     </View>
                 }
-                renderItem={({item}) => (
+                ListEmptyComponent={
+                    <Text style={styles.empty}>No se encontraron resultados.</Text>
+                }
+                renderItem={({ item }) => (
                     <Pressable
                         onPress={() =>
-                            router.push({pathname: "/empresas/[id]", params: {id: item.id}})
+                            router.push({ pathname: "/empresas/[id]", params: { id: item.id } })
                         }
                     >
                         <Card style={styles.card}>
@@ -61,15 +68,15 @@ export default function EmpresasScreen(){
                 )}
             />
         </Screen>
-    )
+    );
 }
-
 
 const styles = StyleSheet.create({
   content: { gap: 12, padding: 16 },
   header: { gap: 6, marginBottom: 8 },
   title: { color: colors.text, fontSize: 30, fontWeight: "800" },
   subtitle: { color: colors.textSecondary, fontSize: 15 },
+  empty: { color: colors.textSecondary, textAlign: "center", marginTop: 40, fontStyle: "italic" },
   card: { gap: 6 },
   name: { color: colors.text, fontSize: 18, fontWeight: "800" },
   location: { color: colors.primary, fontSize: 14, fontWeight: "600" },

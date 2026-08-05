@@ -67,16 +67,22 @@ export const updateEmpresa = async (req: Request, res: Response, next: NextFunct
 
 export const searchEmpresas = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { q, departamento, categoriaId, destacada, page = 1, limit = 10 } = req.query as Record<string, any>;
+    const { q, departamento, categoriaId, page = 1, limit = 10 } = req.query as Record<string, any>;
 
     const result = await empresaService.searchEmpresas({
-      q, departamento, categoriaId,
-      destacada: destacada === 'true', // NUEVO
+      q,
+      departamento,
+      categoriaId,
       page: Number(page),
       limit: Number(limit),
     });
 
-    res.json({ data: result.empresas, total: result.total, page: result.page, limit: result.limit });
+    res.json({
+      data: result.empresas,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    });
   } catch (err) {
     next(err);
   }
@@ -95,9 +101,12 @@ export const getProductos = async (req: Request, res: Response, next: NextFuncti
 export const createProducto = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const empresaId = (req as any).user?.empresaId;
+    const userId = (req as any).user?.userId;
+    // No confiamos en el empresaId del JWT por la misma razón de siempre:
+    // puede estar desactualizado si la empresa se creó después del login.
+    const empresa = await empresaService.getEmpresaByUserId(userId);
 
-    if (!empresaId || empresaId !== id) {
+    if (!empresa || empresa.id !== id) {
       return res
         .status(403)
         .json({ error: 'No tienes permiso para agregar productos a esta empresa.' });
@@ -109,6 +118,59 @@ export const createProducto = async (req: Request, res: Response, next: NextFunc
       message: 'Producto publicado.',
       producto,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateProducto = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, productoId } = req.params;
+    const userId = (req as any).user?.userId;
+    const empresa = await empresaService.getEmpresaByUserId(userId);
+
+    if (!empresa || empresa.id !== id) {
+      return res
+        .status(403)
+        .json({ error: 'No tienes permiso para editar productos de esta empresa.' });
+    }
+
+    const producto = await productoService.getProductoById(productoId);
+    if (!producto || producto.empresaId !== id) {
+      return res.status(404).json({ error: 'Producto no encontrado.' });
+    }
+
+    const actualizado = await productoService.updateProducto(productoId, req.body);
+
+    res.json({
+      message: 'Producto actualizado.',
+      producto: actualizado,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteProducto = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, productoId } = req.params;
+    const userId = (req as any).user?.userId;
+    const empresa = await empresaService.getEmpresaByUserId(userId);
+
+    if (!empresa || empresa.id !== id) {
+      return res
+        .status(403)
+        .json({ error: 'No tienes permiso para eliminar productos de esta empresa.' });
+    }
+
+    const producto = await productoService.getProductoById(productoId);
+    if (!producto || producto.empresaId !== id) {
+      return res.status(404).json({ error: 'Producto no encontrado.' });
+    }
+
+    await productoService.deleteProducto(productoId);
+
+    res.json({ message: 'Producto eliminado.' });
   } catch (err) {
     next(err);
   }

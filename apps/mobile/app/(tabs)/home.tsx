@@ -9,6 +9,7 @@ import { colors } from '../../src/theme/colors';
 import { categoriaService } from '../../src/services/categoria.service';
 import { empresaService } from '../../src/services/empresa.service';
 import { productoService } from '../../src/services/producto.service';
+import { useAuthStore } from '../../src/store/auth.store';
 import type { Categoria, Empresa } from '../../src/services/mock.data';
 
 interface ProductoReciente {
@@ -21,6 +22,7 @@ interface ProductoReciente {
 }
 
 export default function HomeScreen() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [query, setQuery] = useState('');
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [destacadas, setDestacadas] = useState<Empresa[]>([]);
@@ -53,6 +55,17 @@ export default function HomeScreen() {
         resizeMode="cover"
       >
         <View style={styles.heroOverlay}>
+          {!isAuthenticated && (
+            <View style={styles.topBar}>
+              <TouchableOpacity onPress={() => router.push('/auth/login')} style={styles.topBarBtnGhost}>
+                <Text style={styles.topBarBtnGhostText}>Iniciar sesión</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/auth/register')} style={styles.topBarBtn}>
+                <Text style={styles.topBarBtnText}>Registrarse</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <Text style={styles.heroTitle}>
             Encuentra proveedores{'\n'}para tu empresa
           </Text>
@@ -136,7 +149,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 key={p.id}
                 style={styles.productoCard}
-                onPress={() => router.push(`/empresas/${p.empresaId}`)}
+                onPress={() => router.push(`/productos/${p.id}`)}
               >
                 <Image source={{ uri: p.imagenUrl }} style={styles.productoImg} />
                 <Text style={styles.productoNombre} numberOfLines={2}>{p.nombre}</Text>
@@ -162,12 +175,14 @@ export default function HomeScreen() {
         <Text style={styles.footerText}>
           Conectamos compradores y proveedores en el Eje Cafetero y toda Colombia.
         </Text>
-        <View style={styles.loginRow}>
-          <Text style={styles.loginText}>Ya tienes cuenta? </Text>
-          <TouchableOpacity onPress={() => router.push('/auth/login')}>
-            <Text style={styles.loginLink}>Inicia sesion</Text>
-          </TouchableOpacity>
-        </View>
+        {!isAuthenticated && (
+          <View style={styles.loginRow}>
+            <Text style={styles.loginText}>Ya tienes cuenta? </Text>
+            <TouchableOpacity onPress={() => router.push('/auth/login')}>
+              <Text style={styles.loginLink}>Inicia sesion</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
     </ScrollView>
@@ -177,7 +192,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: colors.background },
   hero: { width: '100%', height: 420 },
-  heroOverlay: { flex: 1, backgroundColor: 'rgba(15,61,37,0.75)', justifyContent: 'center', padding: 24, paddingTop: 60 },
+  heroOverlay: { flex: 1, backgroundColor: 'rgba(15,61,37,0.75)', justifyContent: 'center', padding: 24, paddingTop: 50 },
+  topBar: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, position: 'absolute', top: 16, right: 16, left: 16 },
+  topBarBtnGhost: { paddingHorizontal: 16, paddingVertical: 9 },
+  topBarBtnGhostText: { color: colors.white, fontWeight: '600', fontSize: 13 },
+  topBarBtn: { backgroundColor: colors.white, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 8 },
+  topBarBtnText: { color: colors.primary, fontWeight: '700', fontSize: 13 },
   heroTitle: { fontSize: 28, fontWeight: '800', color: colors.white, lineHeight: 36, marginBottom: 12 },
   heroSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 20, marginBottom: 22 },
   searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 10, padding: 6 },

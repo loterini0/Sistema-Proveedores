@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as SecureStore from "expo-secure-store";
+import { storage } from "../utils/storage";
 
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/v1";
@@ -11,7 +11,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync("accessToken");
+  const token = await storage.getItem("accessToken");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -20,8 +20,8 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync("accessToken");
-      await SecureStore.deleteItemAsync("refreshToken");
+      await storage.deleteItem("accessToken");
+      await storage.deleteItem("refreshToken");
     }
     return Promise.reject(error);
   },
@@ -68,4 +68,13 @@ export const rfqService = {
 
 export const categoriaService = {
   listar: () => api.get("/categorias"),
+};
+
+export const productoService = {
+  create: (empresaId: string, data: unknown) =>
+    api.post(`/empresas/${empresaId}/productos`, data),
+  update: (empresaId: string, productoId: string, data: unknown) =>
+    api.put(`/empresas/${empresaId}/productos/${productoId}`, data),
+  remove: (empresaId: string, productoId: string) =>
+    api.delete(`/empresas/${empresaId}/productos/${productoId}`),
 };

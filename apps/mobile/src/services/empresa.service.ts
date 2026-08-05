@@ -1,5 +1,5 @@
 import { mockEmpresas, mockProductos, Empresa, Producto } from "./mock.data";
-import { empresaService as empresaApi } from "./api";
+import { empresaService as empresaApi, productoService as productoApi } from "./api";
 
 const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS === "true";
 
@@ -88,5 +88,38 @@ export const empresaService = {
   ): Promise<Empresa> => {
     const { data } = await empresaApi.update(id, payload);
     return data.empresa;
+  },
+
+  createProducto: async (
+    empresaId: string,
+    payload: {
+      nombre: string;
+      descripcion?: string;
+      precio?: string;
+      categoriaId?: string;
+      imagenUrl?: string;
+    },
+  ) => {
+    const { data } = await productoApi.create(empresaId, payload);
+    return data.producto;
+  },
+
+  updateProducto: async (
+    empresaId: string,
+    productoId: string,
+    payload: Partial<{
+      nombre: string;
+      descripcion: string;
+      precio: string;
+      categoriaId: string;
+      imagenUrl: string;
+    }>,
+  ) => {
+    const { data } = await productoApi.update(empresaId, productoId, payload);
+    return data.producto;
+  },
+
+  deleteProducto: async (empresaId: string, productoId: string) => {
+    await productoApi.remove(empresaId, productoId);
   },
 };
