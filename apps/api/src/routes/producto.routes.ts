@@ -1,7 +1,9 @@
+// producto.routes.ts
 import { Router } from 'express';
-import { getRecientes } from '../controllers/producto.controller';
+import { getRecientes, getProducto } from '../controllers/producto.controller';
 
 const router = Router();
-router.get('/recientes', getRecientes); // público
+router.get('/recientes', getRecientes);
+router.get('/:id', getProducto);
 
 export default router;
