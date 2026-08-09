@@ -2,6 +2,7 @@ import { createWithEqualityFn as create } from "zustand/traditional";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { authService } from "../services/api";
+import { router } from "expo-router";
 
 export interface User {
   id: string;
@@ -90,23 +91,29 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   },
 
   setUser: async (user, accessToken, refreshToken) => {
-    await setItem("accessToken", accessToken);
-    await setItem("refreshToken", refreshToken);
+    await SecureStore.setItemAsync("accessToken", accessToken);
+    await SecureStore.setItemAsync("refreshToken", refreshToken);
 
     set({
       user,
       isAuthenticated: true,
+      isHydrated: true,
     });
   },
 
   logout: async () => {
-    await deleteItem("accessToken");
-    await deleteItem("refreshToken");
 
-    set({
-      user: null,
-      isAuthenticated: false,
-    });
+    try{
+      await SecureStore.deleteItemAsync("accessToken");
+      await SecureStore.deleteItemAsync("refreshToken");
+    } finally{
+      set({
+        user: null,
+        isAuthenticated: false,
+      });
+    }
+    
+    router.replace("/auth/login")
   },
 
   esProveedor: () => !!get().user?.empresaId,

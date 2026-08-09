@@ -7,8 +7,7 @@ import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { Screen } from '../../src/components/Screen';
 import { colors } from '../../src/theme/colors';
-import { authService } from '../../src/services/api';
-import axios from 'axios';
+import { authService, getApiErrorMessage } from '../../src/services/api';
 
 const schema = z.object({
   nombre: z.string().min(2, 'Minimo 2 caracteres'),
@@ -41,12 +40,10 @@ export default function RegisterScreen() {
         [{text: "OK", onPress: () => router.replace("/auth/login")}],
       )
     } catch (error) {
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.error ??
-          error.response?.data?.message ??
-          "No se pudo crear la cuenta"
-        : "No se pudo crear la cuenta"
-      Alert.alert("Error", message);
+      Alert.alert(
+        "Error",
+        getApiErrorMessage(error, "No se pudo crear la cuenta.")
+      )
     }
   };
 
