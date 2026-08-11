@@ -29,13 +29,24 @@ api.interceptors.response.use(
 
 export const authService = {
   register: (data: { email: string; password: string; nombre: string }) =>
-    api.post("/auth/register", data),
+    api.post<RegisterResponse>("/auth/register", data),
+
   login: (data: { email: string; password: string }) =>
-    api.post("/auth/login", data),
+    api.post<LoginResponse>("/auth/login", data),
+
   forgotPassword: (email: string) =>
     api.post("/auth/forgot-password", { email }),
+
   me: () => api.get("/auth/me"),
 };
+
+export function getApiErrorMessage(error: unknown, fallback: string){
+  if (!axios.isAxiosError<ApiErrorResponse>(error)){
+    return fallback;
+  }
+
+  return error.response?.data.error ?? error.response?.data.message ?? fallback;
+}
 
 export const empresaService = {
   search: (params: {
@@ -78,3 +89,27 @@ export const productoService = {
   remove: (empresaId: string, productoId: string) =>
     api.delete(`/empresas/${empresaId}/productos/${productoId}`),
 };
+
+
+export interface AuthUser{
+  id: string;
+  email: string;
+  nombre: string;
+  empresaId: string | null;
+}
+
+export interface LoginResponse{
+  accessToken: string;
+  refreshToken: string;
+  user: AuthUser;
+}
+
+export interface RegisterResponse{
+  message: string;
+  userId: string;
+}
+
+interface ApiErrorResponse{
+  error?: string;
+  message?: string;
+}
