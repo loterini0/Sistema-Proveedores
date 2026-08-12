@@ -1,6 +1,12 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 const FROM = 'Sistema Proveedores <onboarding@resend.dev>';
 const APP_URL = process.env.APP_URL || 'https://sistema-proveedores-api.onrender.com';
 
@@ -9,7 +15,7 @@ export const emailService = {
     const link = `${APP_URL}/api/v1/auth/verify-email/${token}`;
 
     try {
-      await resend.emails.send({
+      await getResendClient().emails.send({
         from: FROM,
         to: email,
         subject: 'Verifica tu cuenta - Sistema Proveedores',
@@ -34,7 +40,7 @@ export const emailService = {
     const link = `${APP_URL}/api/v1/auth/reset-password?token=${token}`; // ajustar si tenés pantalla de reset en mobile
 
     try {
-      await resend.emails.send({
+      await getResendClient().emails.send({
         from: FROM,
         to: email,
         subject: 'Restablece tu contraseña',
