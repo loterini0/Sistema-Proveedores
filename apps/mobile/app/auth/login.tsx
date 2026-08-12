@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +7,7 @@ import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { Screen } from '../../src/components/Screen';
 import { colors } from '../../src/theme/colors';
-import { authService } from '../../src/services/api';
+import { authService, getApiErrorMessage } from '../../src/services/api';
 import { useAuthStore } from '../../src/store/auth.store';
 
 const schema = z.object({
@@ -30,15 +29,10 @@ export default function LoginScreen() {
       const {data} = await authService.login(values);
 
       await setUser(data.user, data.accessToken, data.refreshToken);
+
       router.replace("/home")
     } catch (error) {
-      const message = axios.isAxiosError(error)
-      ? error.response?.data?.error ??
-        error.response?.data?.message ??
-        "No fue posible iniciar sesión"
-      : "No fue posible iniciar sesion"
-
-      Alert.alert("Error", message)
+      Alert.alert("Error", getApiErrorMessage(error, "No fue posible iniciar sesion"))
     }
   };
 
