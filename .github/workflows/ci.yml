@@ -63,3 +63,13 @@ jobs:
           JWT_SECRET: test_secret
           REFRESH_TOKEN_SECRET: test_refresh_secret
           PORT: 3000
+
+      - name: Smoke test API image
+        run: |
+          docker build -f apps/api/Dockerfile.dev -t sistema-proveedores-api:ci .
+          container=$(docker run --rm -d -p 127.0.0.1:3000:3000 sistema-proveedores-api:ci)
+          trap 'docker stop "$container" >/dev/null' EXIT
+          if ! curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:3000/health; then
+            docker logs "$container"
+            exit 1
+          fi
