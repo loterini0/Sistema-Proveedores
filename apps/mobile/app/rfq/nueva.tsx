@@ -12,7 +12,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 import axios from "axios";
 
@@ -32,7 +31,7 @@ interface FormValues {
   fechaLimite: string;
 }
 
-type FormErrors = Partial<Record<keyof FormValues | "attachments", string>>;
+type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 const initialValues: FormValues = {
   titulo: "",
@@ -42,12 +41,6 @@ const initialValues: FormValues = {
   fechaLimite: "",
 };
 
-const allowedDocumentTypes = [
-  "application/pdf",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "image/*",
-];
 
 const dateFormatter = new Intl.DateTimeFormat("es-CO", {
   day: "numeric",
@@ -58,9 +51,6 @@ const dateFormatter = new Intl.DateTimeFormat("es-CO", {
 export default function NuevaRfqScreen() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [attachments, setAttachments] = useState<
-    DocumentPicker.DocumentPickerAsset[]
-  >([]);
   const [submitting, setSubmitting] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState(() => new Date());
@@ -84,43 +74,6 @@ export default function NuevaRfqScreen() {
   const updateValue = (field: keyof FormValues, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
-  };
-
-  const handlePickFiles = async () => {
-    if (attachments.length >= 5) {
-      setErrors((current) => ({
-        ...current,
-        attachments: "Puedes adjuntar maximo 5 archivos.",
-      }));
-      return;
-    }
-
-    const result = await DocumentPicker.getDocumentAsync({
-      type: allowedDocumentTypes,
-      multiple: true,
-      copyToCacheDirectory: true,
-    });
-
-    if (result.canceled) {
-      return;
-    }
-
-    const availableSlots = 5 - attachments.length;
-    const nextFiles = result.assets.slice(0, availableSlots);
-
-    setAttachments((current) => [...current, ...nextFiles]);
-    setErrors((current) => ({
-      ...current,
-      attachments:
-        result.assets.length > availableSlots
-          ? "Solo se agregaron los primeros 5 archivos permitidos."
-          : undefined,
-    }));
-  };
-
-  const handleRemoveAttachment = (uri: string) => {
-    setAttachments((current) => current.filter((file) => file.uri !== uri));
-    setErrors((current) => ({ ...current, attachments: undefined }));
   };
 
   const handleSelectDate = (date: Date) => {
@@ -173,11 +126,6 @@ export default function NuevaRfqScreen() {
         presupuesto: values.presupuesto || undefined,
         fechaLimite: values.fechaLimite,
         destinatarios: destinatarios.map((e) => e.id),
-        attachments: attachments.map((file) => ({
-          uri: file.uri,
-          name: file.name,
-          mimeType: file.mimeType,
-        })),
       });
       router.replace("/rfqs");
     } catch (err: any) {
@@ -263,52 +211,6 @@ export default function NuevaRfqScreen() {
             <Text style={styles.errorText}>{errors.fechaLimite}</Text>
           )}
         </View>
-
-        <View style={styles.attachmentsHeader}>
-          <View>
-            <Text style={styles.label}>Adjuntos</Text>
-            <Text style={styles.helperText}>PDF, Excel o imagenes. Maximo 5.</Text>
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.75}
-            disabled={attachments.length >= 5}
-            onPress={handlePickFiles}
-            style={[
-              styles.attachButton,
-              attachments.length >= 5 && styles.disabled,
-            ]}
-          >
-            <Text style={styles.attachButtonText}>Agregar</Text>
-          </TouchableOpacity>
-        </View>
-
-        {attachments.length > 0 && (
-          <View style={styles.attachmentList}>
-            {attachments.map((file) => (
-              <View key={file.uri} style={styles.attachmentItem}>
-                <View style={styles.attachmentCopy}>
-                  <Text style={styles.attachmentName} numberOfLines={1}>
-                    {file.name}
-                  </Text>
-                  <Text style={styles.attachmentMeta}>
-                    {formatFileSize(file.size)}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  activeOpacity={0.75}
-                  onPress={() => handleRemoveAttachment(file.uri)}
-                  style={styles.removeButton}
-                >
-                  <Text style={styles.removeButtonText}>Quitar</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {!!errors.attachments && (
-          <Text style={styles.errorText}>{errors.attachments}</Text>
-        )}
 
         <View style={styles.field}>
           <Text style={styles.label}>Invitar empresas a cotizar *</Text>
@@ -572,17 +474,6 @@ function onlyDecimalNumbers(value: string) {
   return value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
 }
 
-function formatFileSize(size?: number) {
-  if (!size) {
-    return "Tamano no disponible";
-  }
-
-  if (size < 1024 * 1024) {
-    return `${Math.max(1, Math.round(size / 1024))} KB`;
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 const styles = StyleSheet.create({
   screen: {
@@ -669,68 +560,6 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: colors.textSecondary,
-  },
-  helperText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-  },
-  attachmentsHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-    marginBottom: 10,
-  },
-  attachButton: {
-    borderColor: colors.primary,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  attachButtonText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  disabled: {
-    opacity: 0.45,
-  },
-  attachmentList: {
-    gap: 8,
-  },
-  attachmentItem: {
-    alignItems: "center",
-    backgroundColor: colors.background,
-    borderColor: colors.border,
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    padding: 10,
-  },
-  attachmentCopy: {
-    flex: 1,
-  },
-  attachmentName: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  attachmentMeta: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  removeButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  removeButtonText: {
-    color: colors.error,
-    fontSize: 13,
-    fontWeight: "700",
   },
   submitButton: {
     marginTop: 18,

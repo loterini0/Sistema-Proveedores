@@ -41,6 +41,12 @@ jobs:
         working-directory: apps/api
         run: npx eslint src --ext .ts
 
+      - name: Build API
+        run: npm run build:api
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
       - name: Run migrations
         working-directory: apps/api
         run: npm run db:migrate
@@ -57,3 +63,13 @@ jobs:
           JWT_SECRET: test_secret
           REFRESH_TOKEN_SECRET: test_refresh_secret
           PORT: 3000
+
+      - name: Smoke test API image
+        run: |
+          docker build -f apps/api/Dockerfile.dev -t sistema-proveedores-api:ci .
+          container=$(docker run -d -p 127.0.0.1:3000:3000 sistema-proveedores-api:ci)
+          trap 'docker rm -f "$container" >/dev/null' EXIT
+          if ! curl --fail --silent --show-error --max-time 5 --retry 10 --retry-delay 2 --retry-all-errors http://127.0.0.1:3000/health; then
+            docker logs "$container"
+            exit 1
+          fi

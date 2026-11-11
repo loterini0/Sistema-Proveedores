@@ -80,7 +80,6 @@ export const rfqService = {
     // MVP: toda RFQ es privada, así que siempre hay que invitar al menos
     // una empresa — el backend rechaza la petición si viene vacío.
     destinatarios: string[];
-    attachments?: { uri: string; name: string; mimeType?: string }[];
   }): Promise<Rfq> => {
     const formData = new FormData();
     formData.append("titulo", data.titulo);
@@ -90,16 +89,6 @@ export const rfqService = {
     formData.append("fechaLimite", data.fechaLimite);
     for (const empresaId of data.destinatarios) {
       formData.append("destinatarios", empresaId);
-    }
-
-    for (const file of data.attachments ?? []) {
-      // @ts-expect-error React Native FormData acepta este shape para archivos,
-      // aunque no calce exactamente con el tipo Blob del DOM.
-      formData.append("adjuntos", {
-        uri: file.uri,
-        name: file.name,
-        type: file.mimeType ?? "application/octet-stream",
-      });
     }
 
     const { data: res } = await rfqApi.create(formData);

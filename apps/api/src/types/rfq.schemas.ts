@@ -19,7 +19,10 @@ export const createRFQSchema = z.object({
   // MVP: toda RFQ es privada — no se acepta como campo del cliente, se fuerza en el service.
   // ids de empresas invitadas — obligatorio y con al menos 1, si no la RFQ queda
   // creada pero invisible para cualquier proveedor (nadie en rfqDestinatarios).
-  destinatarios: z.array(z.string().uuid()).min(1, 'Debes invitar al menos una empresa'),
+  destinatarios: z.preprocess(
+    (value) => typeof value === 'string' ? [value] : value,
+    z.array(z.string().uuid()).min(1, 'Debes invitar al menos una empresa'),
+  ),
 });
 
 export const listRFQsSchema = z.object({

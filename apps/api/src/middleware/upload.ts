@@ -1,26 +1,19 @@
+import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 
-const ALLOWED_TYPES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-excel',
-  'image/jpeg',
-  'image/png',
-  'application/octet-stream',
-];
+const parseMultipart = multer({ limits: { fields: 110, fieldSize: 64 * 1024 } }).none();
 
-const storage = multer.memoryStorage();
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 25 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    if (ALLOWED_TYPES.includes(file.mimetype) || file.originalname.match(/\.(dwg|dxf)$/i)) {
-      cb(null, true);
-    } else {
-      cb(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));
+export const uploadMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  parseMultipart(req, res, (err?: unknown) => {
+    if (err instanceof multer.MulterError) {
+      const error = err.code === 'LIMIT_UNEXPECTED_FILE'
+        ? 'Esta solicitud no admite archivos adjuntos.'
+        : 'La solicitud multipart excede los límites permitidos.';
+      return res.status(400).json({ error });
     }
-  },
-});
-
-export const uploadMiddleware = upload.array('adjuntos', 5);
+    if (err) {
+      return res.status(400).json({ error: 'Solicitud multipart inválida.' });
+    }
+    next();
+  });
+};

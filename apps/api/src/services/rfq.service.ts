@@ -7,24 +7,28 @@ export const rfqService = {
   async createRFQ(compradorId: string, empresaCompradorId: string | null, data: CreateRFQDTO) {
     const { destinatarios, ...rfqData } = data;
 
-    const [rfq] = await db
-      .insert(rfqs)
-      .values({
-        compradorId,
-        empresaCompradorId,
-        ...rfqData,
-        privada: true, // MVP: siempre privada, sin importar lo que mande el cliente
-      })
-      .returning();
+    const empresaIds = [...new Set(destinatarios.map((id) => id.toLowerCase()))];
 
-    await db.insert(rfqDestinatarios).values(
-      destinatarios.map((empresaId) => ({
-        rfqId: rfq.id,
-        empresaId,
-      })),
-    );
+    return db.transaction(async (tx) => {
+      const recipients = await tx
+        .select({ id: empresas.id })
+        .from(empresas)
+        .where(inArray(empresas.id, empresaIds))
+        .for('key share');
 
-    return rfq;
+      if (recipients.length !== empresaIds.length) return null;
+
+      const [rfq] = await tx
+        .insert(rfqs)
+        .values({ ...rfqData, compradorId, empresaCompradorId, privada: true })
+        .returning();
+
+      await tx.insert(rfqDestinatarios).values(
+        empresaIds.map((empresaId) => ({ rfqId: rfq.id, empresaId })),
+      );
+
+      return rfq;
+    });
   },
 
   async getRFQById(id: string) {

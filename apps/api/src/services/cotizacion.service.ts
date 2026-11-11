@@ -1,19 +1,9 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { cotizaciones, users, empresas } from '../db/schema';
 import type { CreateCotizacionDTO } from '../types/cotizacion.schemas';
 
 export const cotizacionService = {
-  async yaCotizo(rfqId: string, proveedorId: string) {
-    const [existing] = await db
-      .select({ id: cotizaciones.id })
-      .from(cotizaciones)
-      .where(and(eq(cotizaciones.rfqId, rfqId), eq(cotizaciones.proveedorId, proveedorId)))
-      .limit(1);
-
-    return Boolean(existing);
-  },
-
   async createCotizacion(
     rfqId: string,
     proveedorId: string,
@@ -28,9 +18,10 @@ export const cotizacionService = {
         empresaProveedorId,
         ...data,
       })
+      .onConflictDoNothing({ target: [cotizaciones.rfqId, cotizaciones.proveedorId] })
       .returning();
 
-    return cotizacion;
+    return cotizacion ?? null;
   },
 
   async getCotizacionesByRFQ(rfqId: string) {
