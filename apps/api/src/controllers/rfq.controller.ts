@@ -13,6 +13,10 @@ export const createRFQ = async (req: Request, res: Response, next: NextFunction)
 
     const rfq = await rfqService.createRFQ(compradorId, empresa?.id ?? null, req.body);
 
+    if (!rfq) {
+      return res.status(400).json({ error: 'Una o más empresas destinatarias no existen.' });
+    }
+
     res.status(201).json({
       message: 'RFQ publicada exitosamente.',
       rfq,
@@ -100,17 +104,16 @@ export const submitCotizacion = async (req: Request, res: Response, next: NextFu
       return res.status(403).json({ error: 'No tienes permiso para cotizar esta RFQ.' });
     }
 
-    const yaCotizo = await cotizacionService.yaCotizo(id, proveedorId);
-    if (yaCotizo) {
-      return res.status(409).json({ error: 'Ya enviaste una cotización para esta RFQ.' });
-    }
-
     const cotizacion = await cotizacionService.createCotizacion(
       id,
       proveedorId,
       empresaProveedorId,
       req.body
     );
+
+    if (!cotizacion) {
+      return res.status(409).json({ error: 'Ya enviaste una cotización para esta RFQ.' });
+    }
 
     res.status(201).json({
       message: 'Cotización enviada exitosamente.',

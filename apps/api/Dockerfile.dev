@@ -2,8 +2,9 @@ FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 COPY apps/api/package*.json ./apps/api/
-RUN npm ci
-COPY . .
+COPY apps/mobile/package*.json ./apps/mobile/
+RUN HUSKY=0 npm ci --legacy-peer-deps
+COPY apps/api ./apps/api
 WORKDIR /app/apps/api
 EXPOSE 3000
 CMD ["npm", "run", "dev"]

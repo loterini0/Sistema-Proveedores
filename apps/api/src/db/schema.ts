@@ -1,4 +1,4 @@
-  import { pgTable, uuid, varchar, text, timestamp, boolean, integer, pgEnum } from 'drizzle-orm/pg-core';
+  import { pgTable, uuid, varchar, text, timestamp, boolean, integer, pgEnum, unique } from 'drizzle-orm/pg-core';
 
   export const rfqStatusEnum = pgEnum('rfq_status', [
     'draft',
@@ -102,7 +102,9 @@
     observaciones: text('observaciones'),
     ganadora: boolean('ganadora').default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-  });
+  }, (table) => [
+    unique('cotizaciones_rfq_proveedor_unique').on(table.rfqId, table.proveedorId),
+  ]);
 
   export const rfqDestinatarios = pgTable('rfq_destinatarios', {
     id: uuid('id').defaultRandom().primaryKey(),

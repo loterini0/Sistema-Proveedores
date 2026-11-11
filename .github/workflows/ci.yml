@@ -41,6 +41,12 @@ jobs:
         working-directory: apps/api
         run: npx eslint src --ext .ts
 
+      - name: Build API
+        run: npm run build:api
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
       - name: Run migrations
         working-directory: apps/api
         run: npm run db:migrate
